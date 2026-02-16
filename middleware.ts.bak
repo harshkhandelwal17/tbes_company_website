@@ -1,0 +1,19 @@
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  const isLoggedIn = request.cookies.get('admin-auth')?.value === 'true'
+  const protectedPaths = ['/admin', '/admin/career', '/admin/projects']
+  const isProtected = protectedPaths.some(path =>
+    pathname.startsWith(path)
+  )
+
+  // 🔒 Admin route protection
+  if (isProtected && !isLoggedIn) {
+    return NextResponse.redirect(new URL('/admin/login', request.url))
+  }
+
+  return NextResponse.next()
+}
