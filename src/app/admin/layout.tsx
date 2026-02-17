@@ -22,10 +22,10 @@ export default function AdminLayout({
           Admin Panel
         </h2>
         <nav style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <Link 
-            href="/admin" 
-            style={{ 
-              color: "#ccc", 
+          <Link
+            href="/admin"
+            style={{
+              color: "#ccc",
               textDecoration: "none",
               padding: "0.5rem 0",
               borderRadius: "4px",
@@ -34,10 +34,10 @@ export default function AdminLayout({
           >
             🏠 Dashboard
           </Link>
-          <Link 
-            href="/admin/career" 
-            style={{ 
-              color: "#ccc", 
+          <Link
+            href="/admin/career"
+            style={{
+              color: "#ccc",
               textDecoration: "none",
               padding: "0.5rem 0",
               borderRadius: "4px",
@@ -46,10 +46,10 @@ export default function AdminLayout({
           >
             💼 Career
           </Link>
-          <Link 
-            href="/admin/projects" 
-            style={{ 
-              color: "#ccc", 
+          <Link
+            href="/admin/projects"
+            style={{
+              color: "#ccc",
               textDecoration: "none",
               padding: "0.5rem 0",
               borderRadius: "4px",
@@ -58,23 +58,34 @@ export default function AdminLayout({
           >
             🖼️ Projects
           </Link>
-          <Link 
-            href="/admin/logout" 
-            style={{ 
-              color: "#ccc", 
+          <Link
+            href="/admin/contacts"
+            style={{
+              color: "#ccc",
               textDecoration: "none",
               padding: "0.5rem 0",
               borderRadius: "4px",
               transition: "background-color 0.2s"
             }}
           >
-            🚪 Logout
-          </Link>
+            📬 Inquiries
+            <Link
+              href="/admin/logout"
+              style={{
+                color: "#ccc",
+                textDecoration: "none",
+                padding: "0.5rem 0",
+                borderRadius: "4px",
+                transition: "background-color 0.2s"
+              }}
+            >
+              🚪 Logout
+            </Link>
         </nav>
       </aside>
-      <main 
-        style={{ 
-          flex: 1, 
+      <main
+        style={{
+          flex: 1,
           padding: "2rem",
           backgroundColor: "#f8f9fa",
           minHeight: "100vh"
