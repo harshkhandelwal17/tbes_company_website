@@ -69,18 +69,19 @@ export default function AdminLayout({
             }}
           >
             📬 Inquiries
-            <Link
-              href="/admin/logout"
-              style={{
-                color: "#ccc",
-                textDecoration: "none",
-                padding: "0.5rem 0",
-                borderRadius: "4px",
-                transition: "background-color 0.2s"
-              }}
-            >
-              🚪 Logout
-            </Link>
+          </Link>
+          <Link
+            href="/admin/logout"
+            style={{
+              color: "#ccc",
+              textDecoration: "none",
+              padding: "0.5rem 0",
+              borderRadius: "4px",
+              transition: "background-color 0.2s"
+            }}
+          >
+            🚪 Logout
+          </Link>
         </nav>
       </aside>
       <main
