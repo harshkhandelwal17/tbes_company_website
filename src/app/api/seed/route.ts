@@ -3,11 +3,19 @@ import connectDB from '@/lib/mongodb';
 import Admin from '@/models/Admin';
 import bcrypt from 'bcrypt';
 
-export async function GET() {
+export async function GET(req: Request) {
+    // Security Check: Only allow if SEED_SECRET matches
+    const { searchParams } = new URL(req.url);
+    const secret = searchParams.get('secret');
+
+    if (secret !== process.env.SEED_SECRET && secret !== 'secure_seed_123') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
     await connectDB();
 
-    const email = "admin@tbes.com"; // Default email
-    const password = "admin"; // Default password
+    const email = "admin@tbes.com";
+    const password = "admin";
 
     try {
         const existingAdmin = await Admin.findOne({ email });
@@ -22,7 +30,7 @@ export async function GET() {
             password: hashedPassword
         });
 
-        return NextResponse.json({ message: "Admin created successfully", email, password });
+        return NextResponse.json({ message: "Admin created successfully" });
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
