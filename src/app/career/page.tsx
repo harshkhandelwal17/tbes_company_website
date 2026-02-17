@@ -24,10 +24,19 @@ const CareerPage = () => {
         if (response.ok) {
           const data = await response.json();
           // Filter only active jobs if the API returns everything
-          setJobs(data.filter((job: Job) => job.active !== false));
+          if (Array.isArray(data)) {
+            setJobs(data.filter((job: Job) => job.active !== false));
+          } else {
+            console.error('API returned non-array data:', data);
+            setJobs([]);
+          }
+        } else {
+          console.error('Failed to fetch jobs:', response.statusText);
+          setJobs([]);
         }
       } catch (error) {
         console.error('Error fetching jobs:', error);
+        setJobs([]);
       } finally {
         setLoading(false);
       }

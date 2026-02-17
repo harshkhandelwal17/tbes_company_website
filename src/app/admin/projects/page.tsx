@@ -19,22 +19,29 @@ export default function AdminPage() {
     try {
       const response = await fetch('/api/projects');
       const data = await response.json();
-      setProjects(data);
+
+      if (Array.isArray(data)) {
+        setProjects(data);
+      } else {
+        console.error('API returned non-array data:', data);
+        setProjects([]);
+      }
       setLoading(false);
     } catch (error) {
       console.error('Error fetching projects:', error);
+      setProjects([]);
       setLoading(false);
     }
   };
 
   const handleCreateProject = async (formData: ProjectFormData, imageFiles: File[]) => {
     const uploadData = new FormData();
-    
+
     // Append form data
     Object.entries(formData).forEach(([key, value]) => {
       uploadData.append(key, value.toString());
     });
-    
+
     // Append multiple images
     imageFiles.forEach((file, index) => {
       uploadData.append(`images`, file);
@@ -65,14 +72,14 @@ export default function AdminPage() {
     if (!editingProject) return;
 
     const uploadData = new FormData();
-    
+
     // Append form data
     Object.entries(formData).forEach(([key, value]) => {
       uploadData.append(key, value.toString());
     });
-    
+
     uploadData.append('id', editingProject.id);
-    
+
     // Append new images if any
     if (imageFiles.length > 0) {
       imageFiles.forEach((file, index) => {
@@ -169,8 +176,8 @@ export default function AdminPage() {
               >
                 Add New Project
               </button>
-              <a 
-                href="/" 
+              <a
+                href="/"
                 className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
               >
                 View Projects

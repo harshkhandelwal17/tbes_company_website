@@ -30,10 +30,17 @@ export default function ProjectsPage() {
     try {
       const response = await fetch('/api/projects');
       const data = await response.json();
-      setProjects(data);
+
+      if (Array.isArray(data)) {
+        setProjects(data);
+      } else {
+        console.error('API returned non-array data:', data);
+        setProjects([]);
+      }
       setLoading(false);
     } catch (error) {
       console.error('Error fetching projects:', error);
+      setProjects([]);
       setLoading(false);
     }
   };
@@ -54,9 +61,9 @@ export default function ProjectsPage() {
       filtered = filtered.filter(p => p.projectType === filters.projectType);
     }
     if (filters.area !== 'All') {
-      const [min, max] = filters.area.includes('-') 
+      const [min, max] = filters.area.includes('-')
         ? filters.area.split('-').map(Number)
-        : filters.area === '30000+' 
+        : filters.area === '30000+'
           ? [30000, Infinity]
           : [0, Infinity];
       filtered = filtered.filter(p => p.area >= min && (max === Infinity || p.area < max));
