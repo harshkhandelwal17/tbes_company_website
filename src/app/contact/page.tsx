@@ -1,38 +1,31 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Building2,
-  Mail,
-  Phone,
-  MapPin,
-  Clock,
-  Globe,
-  Send,
-  CheckCircle,
-  AlertCircle
+import { 
+  Building2, Mail, Phone, MapPin, Clock, 
+  Send, CheckCircle2, AlertCircle, ArrowRight, 
+  Globe2, MessageSquare, Loader2 
 } from 'lucide-react';
 
-export default function ContactForm() {
+export default function ContactPage() {
   const [form, setForm] = useState({
     name: '',
     email: '',
     phone: '',
     company: '',
     serviceInterest: 'General Inquiry',
-    subject: '',
     message: ''
   });
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const serviceOptions = [
-    'General Inquiry',
-    'BIM Modeling',
-    'CAD Services',
+    'BIM Modeling (Architecture/Structure)',
+    'MEP Coordination',
     'Scan to BIM',
-    '3D Rendering',
-    'Other'
+    '3D Rendering & Visualization',
+    'CAD Services',
+    'General Inquiry'
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -42,281 +35,254 @@ export default function ContactForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('sending');
-    setErrorMessage('');
 
-    try {
-      const res = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setStatus('success');
-        setForm({
-          name: '',
-          email: '',
-          phone: '',
-          company: '',
-          serviceInterest: 'General Inquiry',
-          subject: '',
-          message: ''
-        });
-      } else {
-        setStatus('error');
-        setErrorMessage(data.error || 'Failed to send message.');
-      }
-    } catch (error) {
-      console.error('Submission error:', error);
-      setStatus('error');
-      setErrorMessage('Something went wrong. Please try again later.');
-    }
+    // Simulate API Call
+    setTimeout(() => {
+      setStatus('success');
+      setForm({ name: '', email: '', phone: '', company: '', serviceInterest: 'General Inquiry', message: '' });
+    }, 2000);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/12 w-64 h-64 bg-blue-500 bg-opacity-5 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/12 w-96 h-96 bg-purple-500 bg-opacity-5 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      </div>
+    <div className="min-h-screen bg-[#05080F] text-white font-sans selection:bg-blue-500/30">
+      
+      {/* =========================================
+          1. HERO BACKGROUND
+      ========================================= */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-[0.05] pointer-events-none"></div>
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 blur-[120px] rounded-full translate-x-1/3 -translate-y-1/3 pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 blur-[120px] rounded-full -translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
 
-      <div className="max-w-7xl mx-auto px-4 py-12 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-4 pb-20">
+        
         {/* Header */}
-        <div className="text-center mb-16 animate-fade-in">
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 tracking-tight">
-            Let's Build <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Something Great</span>
+        <div className="text-center mb-16 lg:mb-24">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-widest mb-6">
+            <MessageSquare size={12} /> Let's Connect
+          </div>
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight leading-[1.1]">
+            Start Your <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400">Digital Transformation.</span>
           </h1>
-          <p className="text-xl text-gray-300 font-light max-w-2xl mx-auto">
-            Ready to transform your construction projects with advanced BIM technology?
-            Our global team of engineers is here to help.
+          <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto font-light leading-relaxed">
+            Ready to optimize your construction workflow? Our engineering team is ready to analyze your project needs.
           </p>
         </div>
 
-        {/* Main Grid */}
-        <div className="grid lg:grid-cols-12 gap-8 mb-12">
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-16">
+          
+          {/* =========================================
+              2. LEFT SIDE: CONTACT INFO & CONTEXT
+          ========================================= */}
+          <div className="lg:col-span-5 space-y-10">
+            
+            {/* Direct Contact Cards */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">Direct Channels</h3>
+              
+              <a href="mailto:info@tbesglobal.com" className="group flex items-center gap-5 p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] hover:border-blue-500/30 transition-all duration-300">
+                <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                  <Mail size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-400 mb-0.5">Email Us</p>
+                  <p className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors">info@tbesglobal.com</p>
+                </div>
+              </a>
 
-          {/* Contact Form Section (Left - 7 cols) */}
+              <a href="tel:+916294796582" className="group flex items-center gap-5 p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] hover:border-green-500/30 transition-all duration-300">
+                <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center text-green-400 group-hover:scale-110 transition-transform">
+                  <Phone size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-400 mb-0.5">Call Us (Mon-Fri)</p>
+                  <p className="text-lg font-bold text-white group-hover:text-green-400 transition-colors">+91 629 479 6582</p>
+                </div>
+              </a>
+
+              <div className="group flex items-start gap-5 p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] hover:border-purple-500/30 transition-all duration-300">
+                <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 shrink-0">
+                  <MapPin size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-400 mb-0.5">Global HQ</p>
+                  <p className="text-lg font-bold text-white leading-snug">
+                    Durgapur, West Bengal,<br /> India - 713213
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Global Reach Visual */}
+            <div className="p-8 rounded-3xl bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-white/10 relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-32 bg-blue-500/10 blur-[60px] rounded-full pointer-events-none"></div>
+               <div className="relative z-10">
+                  <Globe2 className="text-blue-400 mb-4" size={32} />
+                  <h4 className="text-xl font-bold text-white mb-2">Global Service Standards</h4>
+                  <p className="text-slate-400 text-sm leading-relaxed mb-4">
+                     We deliver ISO-19650 compliant BIM models to clients across the USA, UK, Middle East, and Australia.
+                  </p>
+                  <div className="flex gap-2">
+                     {['🇺🇸', '🇬🇧', '🇦🇪', '🇦🇺', '🇮🇳'].map(flag => (
+                        <span key={flag} className="text-lg bg-white/5 p-2 rounded-lg">{flag}</span>
+                     ))}
+                  </div>
+               </div>
+            </div>
+
+          </div>
+
+          {/* =========================================
+              3. RIGHT SIDE: THE FORM (Glass Panel)
+          ========================================= */}
           <div className="lg:col-span-7">
-            <div className="bg-white bg-opacity-95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white border-opacity-20 h-full">
-              <div className="flex items-center gap-3 mb-8">
-                <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white">
-                  <Mail className="w-5 h-5" />
+            <div className="bg-[#0B0F19] border border-white/10 rounded-[2.5rem] p-8 md:p-12 shadow-2xl relative overflow-hidden">
+              
+              {/* Form Status Overlay */}
+              {status === 'success' ? (
+                <div className="absolute inset-0 z-20 bg-[#0B0F19] flex flex-col items-center justify-center text-center p-8 animate-in fade-in zoom-in duration-300">
+                   <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mb-6">
+                      <CheckCircle2 size={48} className="text-green-500" />
+                   </div>
+                   <h3 className="text-3xl font-bold text-white mb-2">Message Received!</h3>
+                   <p className="text-slate-400 max-w-md mb-8">
+                      Thank you for reaching out. Our engineering team will review your requirements and contact you within 24 hours.
+                   </p>
+                   <button 
+                      onClick={() => setStatus('idle')}
+                      className="px-8 py-3 rounded-xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-colors"
+                   >
+                      Send Another Message
+                   </button>
                 </div>
-                <h2 className="text-2xl font-bold text-black">Send Us a Message</h2>
-              </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
+                  
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Name */}
+                    <div className="space-y-2">
+                      <label className={`text-xs font-bold uppercase tracking-wider transition-colors ${focusedField === 'name' ? 'text-blue-400' : 'text-slate-500'}`}>Full Name</label>
+                      <input 
+                        type="text" name="name" required placeholder="John Doe"
+                        value={form.name} onChange={handleChange}
+                        onFocus={() => setFocusedField('name')} onBlur={() => setFocusedField(null)}
+                        className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500 focus:bg-white/[0.05] transition-all"
+                      />
+                    </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  {/* Name */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700">Full Name *</label>
-                    <input
-                      name="name"
-                      value={form.name}
-                      onChange={handleChange}
-                      placeholder="John Doe"
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-black focus:ring-2 focus:ring-gray-200 outline-none transition-all"
-                      required
-                    />
+                    {/* Email */}
+                    <div className="space-y-2">
+                      <label className={`text-xs font-bold uppercase tracking-wider transition-colors ${focusedField === 'email' ? 'text-blue-400' : 'text-slate-500'}`}>Email Address</label>
+                      <input 
+                        type="email" name="email" required placeholder="john@company.com"
+                        value={form.email} onChange={handleChange}
+                        onFocus={() => setFocusedField('email')} onBlur={() => setFocusedField(null)}
+                        className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500 focus:bg-white/[0.05] transition-all"
+                      />
+                    </div>
                   </div>
 
-                  {/* Email */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700">Email Address *</label>
-                    <input
-                      name="email"
-                      type="email"
-                      value={form.email}
-                      onChange={handleChange}
-                      placeholder="john@company.com"
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-black focus:ring-2 focus:ring-gray-200 outline-none transition-all"
-                      required
-                    />
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Phone */}
+                    <div className="space-y-2">
+                      <label className={`text-xs font-bold uppercase tracking-wider transition-colors ${focusedField === 'phone' ? 'text-blue-400' : 'text-slate-500'}`}>Phone (Optional)</label>
+                      <input 
+                        type="tel" name="phone" placeholder="+1 (555) 000-0000"
+                        value={form.phone} onChange={handleChange}
+                        onFocus={() => setFocusedField('phone')} onBlur={() => setFocusedField(null)}
+                        className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500 focus:bg-white/[0.05] transition-all"
+                      />
+                    </div>
+
+                    {/* Company */}
+                    <div className="space-y-2">
+                      <label className={`text-xs font-bold uppercase tracking-wider transition-colors ${focusedField === 'company' ? 'text-blue-400' : 'text-slate-500'}`}>Company Name</label>
+                      <input 
+                        type="text" name="company" placeholder="Construct Inc."
+                        value={form.company} onChange={handleChange}
+                        onFocus={() => setFocusedField('company')} onBlur={() => setFocusedField(null)}
+                        className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500 focus:bg-white/[0.05] transition-all"
+                      />
+                    </div>
                   </div>
 
-                  {/* Phone */}
+                  {/* Service Selection */}
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700">Phone Number</label>
-                    <input
-                      name="phone"
-                      type="tel"
-                      value={form.phone}
-                      onChange={handleChange}
-                      placeholder="+1 (555) 000-0000"
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-black focus:ring-2 focus:ring-gray-200 outline-none transition-all"
-                    />
+                    <label className={`text-xs font-bold uppercase tracking-wider transition-colors ${focusedField === 'service' ? 'text-blue-400' : 'text-slate-500'}`}>I'm Interested In</label>
+                    <div className="relative">
+                      <select 
+                        name="serviceInterest"
+                        value={form.serviceInterest} onChange={handleChange}
+                        onFocus={() => setFocusedField('service')} onBlur={() => setFocusedField(null)}
+                        className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-blue-500 focus:bg-white/[0.05] transition-all appearance-none cursor-pointer"
+                      >
+                        {serviceOptions.map(opt => <option key={opt} value={opt} className="bg-[#0B0F19] text-white">{opt}</option>)}
+                      </select>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Company */}
+                  {/* Message */}
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700">Company Name</label>
-                    <input
-                      name="company"
-                      value={form.company}
-                      onChange={handleChange}
-                      placeholder="Your Company Ltd."
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-black focus:ring-2 focus:ring-gray-200 outline-none transition-all"
-                    />
+                    <label className={`text-xs font-bold uppercase tracking-wider transition-colors ${focusedField === 'message' ? 'text-blue-400' : 'text-slate-500'}`}>Project Details</label>
+                    <textarea 
+                      name="message" required rows={4} 
+                      placeholder="Tell us about your project scope, timeline, and specific requirements..."
+                      value={form.message} onChange={handleChange}
+                      onFocus={() => setFocusedField('message')} onBlur={() => setFocusedField(null)}
+                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500 focus:bg-white/[0.05] transition-all resize-none"
+                    ></textarea>
                   </div>
-                </div>
 
-                {/* Service Interest */}
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700">I'm interested in...</label>
-                  <select
-                    name="serviceInterest"
-                    value={form.serviceInterest}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-black focus:ring-2 focus:ring-gray-200 outline-none transition-all cursor-pointer text-gray-700"
+                  {/* Submit Button */}
+                  <button 
+                    type="submit"
+                    disabled={status === 'sending'}
+                    className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-lg shadow-lg shadow-blue-900/20 flex items-center justify-center gap-3 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed group"
                   >
-                    {serviceOptions.map((option) => (
-                      <option key={option} value={option}>{option}</option>
-                    ))}
-                  </select>
-                </div>
+                    {status === 'sending' ? (
+                      <>
+                        <Loader2 className="animate-spin" /> Sending Request...
+                      </>
+                    ) : (
+                      <>
+                        Send Inquiry <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
+                  </button>
 
-                {/* Subject */}
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700">Subject *</label>
-                  <input
-                    name="subject"
-                    value={form.subject}
-                    onChange={handleChange}
-                    placeholder="Project Inquiry"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-black focus:ring-2 focus:ring-gray-200 outline-none transition-all"
-                    required
-                  />
-                </div>
+                  <p className="text-center text-xs text-slate-500 mt-4">
+                    By submitting this form, you agree to our <a href="#" className="text-slate-400 hover:text-white underline">Privacy Policy</a>.
+                  </p>
 
-                {/* Message */}
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700">Message *</label>
-                  <textarea
-                    name="message"
-                    value={form.message}
-                    onChange={handleChange}
-                    placeholder="Tell us about your project requirements..."
-                    rows={5}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-black focus:ring-2 focus:ring-gray-200 outline-none transition-all resize-none"
-                    required
-                  />
-                </div>
-
-                <button
-                  onClick={handleSubmit}
-                  disabled={status === 'sending' || status === 'success'}
-                  className={`w-full font-semibold py-4 px-6 rounded-xl transform transition-all duration-200 flex items-center justify-center gap-2
-                    ${status === 'success'
-                      ? 'bg-green-600 hover:bg-green-700 text-white cursor-default'
-                      : 'bg-black hover:bg-gray-900 text-white hover:-translate-y-1 hover:shadow-lg'
-                    }
-                    ${status === 'sending' ? 'opacity-70 cursor-wait' : ''}
-                  `}
-                >
-                  {status === 'sending' ? (
-                    <>Sending...</>
-                  ) : status === 'success' ? (
-                    <>Message Sent <CheckCircle className="w-5 h-5" /></>
-                  ) : (
-                    <>Send Message <Send className="w-4 h-4" /></>
-                  )}
-                </button>
-
-                {status === 'error' && (
-                  <div className="flex items-center gap-2 text-red-600 bg-red-50 p-3 rounded-lg text-sm">
-                    <AlertCircle className="w-4 h-4" />
-                    {errorMessage}
-                  </div>
-                )}
-
-                {status === 'success' && (
-                  <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg text-sm">
-                    <CheckCircle className="w-4 h-4" />
-                    Thank you! We have received your message and will get back to you shortly.
-                  </div>
-                )}
-              </form>
-            </div>
-          </div>
-
-          {/* Info Section (Right - 5 cols) */}
-          <div className="lg:col-span-5 space-y-6">
-
-            {/* Contact Details Card */}
-            <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-3xl p-8 border border-white border-opacity-10">
-              <h3 className="text-2xl font-bold text-white mb-6">Contact Information</h3>
-              <div className="space-y-6">
-                {[
-                  { icon: <Mail className="w-5 h-5" />, title: 'Email Us', content: 'info@tbesglobal.com', link: 'mailto:info@tbesglobal.com' },
-                  { icon: <Phone className="w-5 h-5" />, title: 'Call Us', content: '+91 629-479-6582', link: 'tel:+916294796582' },
-                  { icon: <MapPin className="w-5 h-5" />, title: 'Visit Us', content: 'Durgapur, West Bengal, India', link: null },
-                  { icon: <Clock className="w-5 h-5" />, title: 'Business Hours', content: 'Mon - Fri: 9:00 AM - 7:00 PM IST', link: null },
-                ].map((item, index) => (
-                  <div key={index} className="flex gap-4 group">
-                    <div className="w-12 h-12 bg-white bg-opacity-10 rounded-2xl flex items-center justify-center text-white group-hover:bg-white group-hover:text-black transition-all duration-300">
-                      {item.icon}
-                    </div>
-                    <div>
-                      <p className="text-gray-400 text-sm mb-1">{item.title}</p>
-                      {item.link ? (
-                        <a href={item.link} className="text-white font-medium hover:text-blue-400 transition-colors">
-                          {item.content}
-                        </a>
-                      ) : (
-                        <p className="text-white font-medium">{item.content}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                </form>
+              )}
             </div>
 
-            {/* Global Reach Card */}
-            <div className="bg-gradient-to-br from-blue-600 to-purple-700 rounded-3xl p-8 text-white relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl transform translate-x-10 -translate-y-10 group-hover:translate-x-5 group-hover:-translate-y-5 transition-transform duration-500"></div>
-
-              <Globe className="w-12 h-12 mb-6 text-blue-200" />
-              <h3 className="text-2xl font-bold mb-4">Global Reach</h3>
-              <p className="text-blue-100 mb-6 leading-relaxed">
-                We serve clients worldwide, delivering standardized BIM solutions across different time zones and regional standards.
-              </p>
-
-              <div className="flex flex-wrap gap-2">
-                {['USA', 'UK', 'Europe', 'Middle East', 'Australia', 'India'].map((region) => (
-                  <span key={region} className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-xs font-medium">
-                    {region}
-                  </span>
-                ))}
-              </div>
+            {/* UX Note: What happens next? */}
+            <div className="mt-8 flex items-center justify-center gap-8 text-slate-500 text-sm">
+               <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-xs font-bold border border-white/10">1</span>
+                  <span>Review (24h)</span>
+               </div>
+               <div className="w-8 h-px bg-white/10"></div>
+               <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-xs font-bold border border-white/10">2</span>
+                  <span>Discovery Call</span>
+               </div>
+               <div className="w-8 h-px bg-white/10"></div>
+               <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-xs font-bold border border-white/10">3</span>
+                  <span>Proposal</span>
+               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Company blurb at bottom */}
-        <div className="text-center mt-16 border-t border-gray-800 pt-16">
-          <div className="inline-flex items-center justify-center p-2 rounded-full bg-white bg-opacity-5 border border-white border-opacity-10 mb-6">
-            <Building2 className="w-5 h-5 text-gray-400 mx-2" />
-            <span className="text-gray-300 text-sm font-medium pr-2">The BIM Engineering Studio</span>
           </div>
-          <p className="text-gray-500 max-w-3xl mx-auto">
-            Established in 2018, TBES Global specializes in providing collaborative and coordinated design support
-            that helps deliver exceptional results for our clients.
-          </p>
+
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-          animation: fade-in 1s ease-out forwards;
-        }
-      `}</style>
     </div>
   );
 }

@@ -30,6 +30,8 @@ export async function POST(req: NextRequest) {
     const sow = formData.get('sow') as string;
     const projectType = formData.get('projectType') as string;
     const areaStr = formData.get('area') as string;
+    const modelUrl = formData.get('modelUrl') as string;
+    const modelType = formData.get('modelType') as string;
 
     // Validate and parse numbers
     const lod = lodStr ? parseInt(lodStr) : undefined;
@@ -85,6 +87,8 @@ export async function POST(req: NextRequest) {
       projectType,
       area,
       imageUrls: JSON.stringify(imageUrls), // Store multiple images as JSON string
+      modelUrl,
+      modelType,
     };
 
     console.log('Creating project with data:', projectData);
@@ -222,6 +226,8 @@ export async function PUT(req: NextRequest) {
       projectType,
       area,
       imageUrls: JSON.stringify(imageUrls), // Store as JSON string
+      modelUrl,
+      modelType,
     };
 
     console.log('Updating project with data:', updateData);

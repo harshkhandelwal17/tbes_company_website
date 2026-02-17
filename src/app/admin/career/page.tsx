@@ -3,25 +3,25 @@
 import { useState, useEffect } from 'react'
 
 interface Job {
-  id: string
+  _id: string
   title: string
-  department: string
+  department?: string
   location: string
   type: string // Full-time, Part-time, Contract
-  experience: string
+  experience?: string
   description: string
-  requirements: string[]
-  responsibilities: string[]
-  salary: string
-  posted: string
-  status: 'active' | 'inactive'
+  requirements?: string[]
+  responsibilities?: string[]
+  salary?: string
+  createdAt: string
+  status?: string
 }
 
 export default function AdminPanel() {
   const [jobs, setJobs] = useState<Job[]>([])
   const [isAddingJob, setIsAddingJob] = useState(false)
   const [editingJob, setEditingJob] = useState<Job | null>(null)
-  const [formData, setFormData] = useState<Omit<Job, 'id' | 'posted'>>({
+  const [formData, setFormData] = useState<Omit<Job, '_id' | 'createdAt'>>({
     title: '',
     department: '',
     location: '',
@@ -41,7 +41,7 @@ export default function AdminPanel() {
 
   const loadJobs = async () => {
     try {
-      const response = await fetch('/api/admin/jobs')
+      const response = await fetch('/api/jobs') // Switched to real API
       if (response.ok) {
         const data = await response.json()
         setJobs(data)
@@ -56,33 +56,33 @@ export default function AdminPanel() {
   }
 
   const handleArrayChange = (field: 'requirements' | 'responsibilities', index: number, value: string) => {
-    const newArray = [...formData[field]]
+    const newArray = [...(formData[field] || [])]
     newArray[index] = value
     setFormData(prev => ({ ...prev, [field]: newArray }))
   }
 
   const addArrayItem = (field: 'requirements' | 'responsibilities') => {
-    setFormData(prev => ({ ...prev, [field]: [...prev[field], ''] }))
+    setFormData(prev => ({ ...prev, [field]: [...(prev[field] || []), ''] }))
   }
 
   const removeArrayItem = (field: 'requirements' | 'responsibilities', index: number) => {
-    const newArray = formData[field].filter((_, i) => i !== index)
+    const newArray = (formData[field] || []).filter((_, i) => i !== index)
     setFormData(prev => ({ ...prev, [field]: newArray }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     const filteredData = {
       ...formData,
-      requirements: formData.requirements.filter(req => req.trim() !== ''),
-      responsibilities: formData.responsibilities.filter(resp => resp.trim() !== '')
+      requirements: (formData.requirements || []).filter(req => req.trim() !== ''),
+      responsibilities: (formData.responsibilities || []).filter(resp => resp.trim() !== '')
     }
 
     try {
-      const url = editingJob ? `/api/admin/jobs/${editingJob.id}` : '/api/admin/jobs'
+      const url = editingJob ? `/api/jobs?id=${editingJob._id}` : '/api/jobs'
       const method = editingJob ? 'PUT' : 'POST'
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -98,10 +98,10 @@ export default function AdminPanel() {
     }
   }
 
-  const deleteJob = async (id: string) => {
+  const deleteJob = async (_id: string) => {
     if (confirm('Are you sure you want to delete this job?')) {
       try {
-        const response = await fetch(`/api/admin/jobs/${id}`, { method: 'DELETE' })
+        const response = await fetch(`/api/jobs?id=${_id}`, { method: 'DELETE' })
         if (response.ok) {
           loadJobs()
         }
@@ -115,15 +115,15 @@ export default function AdminPanel() {
     setEditingJob(job)
     setFormData({
       title: job.title,
-      department: job.department,
+      department: job.department || '',
       location: job.location,
       type: job.type,
-      experience: job.experience,
+      experience: job.experience || '',
       description: job.description,
-      requirements: job.requirements,
-      responsibilities: job.responsibilities,
-      salary: job.salary,
-      status: job.status
+      requirements: job.requirements || [''],
+      responsibilities: job.responsibilities || [''],
+      salary: job.salary || '',
+      status: job.status || 'active'
     })
     setIsAddingJob(true)
   }
@@ -184,7 +184,6 @@ export default function AdminPanel() {
                       value={formData.department}
                       onChange={(e) => handleInputChange('department', e.target.value)}
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                      required
                     />
                   </div>
                   <div>
@@ -217,7 +216,6 @@ export default function AdminPanel() {
                       onChange={(e) => handleInputChange('experience', e.target.value)}
                       placeholder="e.g., 2-4 years"
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                      required
                     />
                   </div>
                   <div>
@@ -246,7 +244,7 @@ export default function AdminPanel() {
                 {/* Requirements */}
                 <div>
                   <label className="block text-sm font-medium mb-2">Requirements</label>
-                  {formData.requirements.map((req, index) => (
+                  {(formData.requirements || []).map((req, index) => (
                     <div key={index} className="flex gap-2 mb-2">
                       <input
                         type="text"
@@ -276,7 +274,7 @@ export default function AdminPanel() {
                 {/* Responsibilities */}
                 <div>
                   <label className="block text-sm font-medium mb-2">Responsibilities</label>
-                  {formData.responsibilities.map((resp, index) => (
+                  {(formData.responsibilities || []).map((resp, index) => (
                     <div key={index} className="flex gap-2 mb-2">
                       <input
                         type="text"
@@ -307,7 +305,7 @@ export default function AdminPanel() {
                   <label className="block text-sm font-medium mb-2">Status</label>
                   <select
                     value={formData.status}
-                    onChange={(e) => handleInputChange('status', e.target.value as 'active' | 'inactive')}
+                    onChange={(e) => handleInputChange('status', e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="active">Active</option>
@@ -341,25 +339,24 @@ export default function AdminPanel() {
               <p className="text-gray-500">No jobs posted yet.</p>
             ) : (
               jobs.map(job => (
-                <div key={job.id} className="border rounded-lg p-4 bg-white shadow">
+                <div key={job._id} className="border rounded-lg p-4 bg-white shadow">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <h3 className="text-xl font-semibold text-gray-800">{job.title}</h3>
                       <div className="text-sm text-gray-600 mt-1">
                         <span className="mr-4">📍 {job.location}</span>
-                        <span className="mr-4">🏢 {job.department}</span>
+                        {job.department && <span className="mr-4">🏢 {job.department}</span>}
                         <span className="mr-4">⏰ {job.type}</span>
-                        <span className="mr-4">💼 {job.experience}</span>
+                        {job.experience && <span className="mr-4">💼 {job.experience}</span>}
                         {job.salary && <span className="mr-4">💰 {job.salary}</span>}
                       </div>
                       <p className="text-gray-700 mt-2">{job.description.substring(0, 200)}...</p>
                       <div className="mt-2">
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          job.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {job.status.toUpperCase()}
+                        <span className={`px-2 py-1 rounded text-xs ${(job.status || 'active') === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                          {(job.status || 'ACTIVE').toUpperCase()}
                         </span>
-                        <span className="text-xs text-gray-500 ml-2">Posted: {job.posted}</span>
+                        <span className="text-xs text-gray-500 ml-2">Posted: {new Date(job.createdAt).toLocaleDateString()}</span>
                       </div>
                     </div>
                     <div className="flex gap-2 ml-4">
@@ -370,7 +367,7 @@ export default function AdminPanel() {
                         Edit
                       </button>
                       <button
-                        onClick={() => deleteJob(job.id)}
+                        onClick={() => deleteJob(job._id)}
                         className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
                       >
                         Delete

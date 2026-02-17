@@ -31,7 +31,15 @@ const ProjectSchema = new mongoose.Schema(
             required: false,
         },
         imageUrls: {
-            type: String, // Storing as JSON string to match previous structure, or could failover to array of strings if we migrate fully. Keeping compatible.
+            type: String, // Storing as JSON string
+            required: false,
+        },
+        modelUrl: {
+            type: String,
+            required: false,
+        },
+        modelType: {
+            type: String,
             required: false,
         },
     },

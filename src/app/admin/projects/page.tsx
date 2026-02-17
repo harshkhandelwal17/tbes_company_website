@@ -39,7 +39,9 @@ export default function AdminPage() {
 
     // Append form data
     Object.entries(formData).forEach(([key, value]) => {
-      uploadData.append(key, value.toString());
+      if (value !== undefined && value !== null) {
+        uploadData.append(key, value.toString());
+      }
     });
 
     // Append multiple images
@@ -75,7 +77,9 @@ export default function AdminPage() {
 
     // Append form data
     Object.entries(formData).forEach(([key, value]) => {
-      uploadData.append(key, value.toString());
+      if (value !== undefined && value !== null) {
+        uploadData.append(key, value.toString());
+      }
     });
 
     uploadData.append('id', editingProject.id);

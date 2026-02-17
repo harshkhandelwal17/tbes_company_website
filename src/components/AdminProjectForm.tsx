@@ -1,6 +1,7 @@
 //AdminProjectForm.tsx
 import { useState, useRef, useEffect } from 'react';
 import { Project, ProjectFormData, FILTER_OPTIONS } from '@/types';
+import { CldUploadWidget } from 'next-cloudinary';
 
 interface AdminProjectFormProps {
   project?: Project | null;
@@ -16,6 +17,8 @@ interface EnhancedProjectFormData extends Omit<ProjectFormData, 'sow' | 'area' |
   softwareUsed: string[];
   trades: string[];
   services: string[];
+  modelUrl?: string;
+  modelType?: string;
 }
 
 const TRADE_OPTIONS = [
@@ -58,7 +61,9 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
     areaSqft: Math.round((project?.area || 10000) * 10.764), // Convert sqm to sqft
     softwareUsed: [], // You might need to parse this from existing project data
     trades: [], // You might need to parse this from existing project data
-    services: [] // You might need to parse this from existing project data
+    services: [], // You might need to parse this from existing project data
+    modelUrl: project?.modelUrl || '',
+    modelType: project?.modelType || ''
   });
 
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -88,7 +93,7 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
   const handleAreaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const numValue = parseInt(value) || 0;
-    
+
     if (name === 'areaSqm') {
       setFormData(prev => ({
         ...prev,
@@ -110,7 +115,7 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
       const newValues = currentValues.includes(value)
         ? currentValues.filter(item => item !== value)
         : [...currentValues, value];
-      
+
       return {
         ...prev,
         [fieldName]: newValues
@@ -122,7 +127,7 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
       setImageFiles(prev => [...prev, ...files]);
-      
+
       // Create previews for new files
       files.forEach(file => {
         const reader = new FileReader();
@@ -145,7 +150,7 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!project && imageFiles.length === 0) {
       alert('Please select at least one image for new projects');
       return;
@@ -157,7 +162,7 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
     }
 
     setIsSubmitting(true);
-    
+
     try {
       // Convert back to original format for submission
       const submitData: ProjectFormData = {
@@ -165,7 +170,7 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
         area: formData.areaSqm, // Use sqm as primary area value
         sow: `${formData.trades.join(', ')} | ${formData.services.join(', ')}` // Combine trades and services
       };
-      
+
       await onSubmit(submitData, imageFiles);
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -404,7 +409,7 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
           <div className="mt-2 text-sm text-gray-600">
             You can select multiple images at once. Click "Choose Files" again to add more images.
           </div>
-          
+
           {/* Image Previews Grid */}
           {imagePreviews.length > 0 && (
             <div className="mt-4">
@@ -435,9 +440,69 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
             </div>
           )}
         </div>
+        {/* 3D Model Upload (Cloudinary) */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            3D Model (OBJ/FBX/GLTF)
+          </label>
+
+          <div className="flex items-center gap-4">
+            <CldUploadWidget
+              uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "tbes-projects"}
+              onSuccess={(result: any) => {
+                if (result.info?.secure_url) {
+                  const url = result.info.secure_url;
+                  const extension = url.split('.').pop()?.toLowerCase();
+
+                  setFormData(prev => ({
+                    ...prev,
+                    modelUrl: url,
+                    modelType: extension
+                  }));
+                }
+              }}
+              options={{
+                sources: ['local', 'url'],
+                resourceType: 'raw', // Important for 3D files
+                clientAllowedFormats: ['obj', 'fbx', 'gltf', 'glb'],
+                maxFileSize: 100000000, // 100MB
+              }}
+            >
+              {({ open }) => {
+                return (
+                  <button
+                    type="button"
+                    onClick={() => open()}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+                  >
+                    Upload 3D Model
+                  </button>
+                );
+              }}
+            </CldUploadWidget>
+
+            {formData.modelUrl && (
+              <div className="text-sm text-green-600 flex items-center">
+                <span className="mr-2">✓ Model Uploaded</span>
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, modelUrl: '', modelType: '' }))}
+                  className="text-red-500 hover:text-red-700 text-xs underline"
+                >
+                  Remove
+                </button>
+              </div>
+            )}
+          </div>
+          {formData.modelUrl && (
+            <div className="mt-1 text-xs text-gray-500 break-all">
+              URL: {formData.modelUrl}
+            </div>
+          )}
+        </div>
 
         {/* Submit Buttons */}
-        <div className="flex justify-end space-x-4 pt-6 border-t">
+        < div className="flex justify-end space-x-4 pt-6 border-t" >
           <button
             type="button"
             onClick={onCancel}
@@ -450,15 +515,15 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
             disabled={isSubmitting}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
           >
-            {isSubmitting 
-              ? 'Saving...' 
-              : project 
-                ? 'Update Project' 
+            {isSubmitting
+              ? 'Saving...'
+              : project
+                ? 'Update Project'
                 : 'Create Project'
             }
           </button>
-        </div>
-      </form>
-    </div>
+        </div >
+      </form >
+    </div >
   );
 }

@@ -9,7 +9,8 @@ export interface Project {
   area: number;
   imageUrl?: string;
   images?: string[]; // Array of image URLs
-  fbxUrl?: string;
+  modelUrl?: string;
+  modelType?: 'obj' | 'fbx' | 'gltf' | 'glb';
   createdAt: Date;
   updatedAt: Date;
   softwareUsed?: string[];
@@ -23,6 +24,8 @@ export interface ProjectFormData {
   sow: string;
   projectType: string;
   area: number;
+  modelUrl?: string;
+  modelType?: string;
 }
 
 export interface FilterOptions {
