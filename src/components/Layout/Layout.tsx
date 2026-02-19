@@ -1,3 +1,6 @@
+'use client';
+
+import { usePathname } from 'next/navigation';
 import Header from './Header';
 import Footer from './Footer';
 
@@ -6,6 +9,13 @@ interface LayoutProps {
 }
 
 const Layout = ({ children }: LayoutProps) => {
+  const pathname = usePathname();
+  const isAdminAttributes = pathname?.startsWith('/admin');
+
+  if (isAdminAttributes) {
+    return <main>{children}</main>;
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -16,4 +26,5 @@ const Layout = ({ children }: LayoutProps) => {
     </div>
   );
 };
+
 export default Layout;

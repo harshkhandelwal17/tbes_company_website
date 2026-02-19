@@ -1,23 +1,47 @@
 import mongoose from "mongoose";
 
-const connectDB = async () => {
-  if (mongoose.connections[0].readyState) return;
+const MONGODB_URI = process.env.MONGODB_URI;
 
-  const MONGODB_URI = process.env.MONGODB_URI;
+if (!MONGODB_URI) {
+  throw new Error(
+    "Please define the MONGODB_URI environment variable inside .env.local"
+  );
+}
 
-  if (!MONGODB_URI) {
-    const errorMsg = "❌ MONGODB_URI is not defined in environment variables. Please check your .env file or Vercel settings.";
-    console.error(errorMsg);
-    throw new Error(errorMsg);
+/**
+ * Global is used here to maintain a cached connection across hot reloads
+ * in development. This prevents connections growing exponentially
+ * during API Route usage.
+ */
+let cached = (global as any).mongoose;
+
+if (!cached) {
+  cached = (global as any).mongoose = { conn: null, promise: null };
+}
+
+async function connectDB() {
+  if (cached.conn) {
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
+    };
+
+    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
+      return mongoose;
+    });
   }
 
   try {
-    await mongoose.connect(MONGODB_URI);
-    console.log("✅ MongoDB Connected");
-  } catch (err) {
-    console.error("❌ MongoDB Connection Error:", err);
-    throw err;
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
+    throw e;
   }
-};
+
+  return cached.conn;
+}
 
 export default connectDB;
