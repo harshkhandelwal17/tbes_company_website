@@ -14,6 +14,8 @@ interface Service {
     software: string[];
     image: string;
     color: string;
+    outcome: string;
+    order: number;
     active: boolean;
 }
 
@@ -31,6 +33,8 @@ export default function AdminServiceForm({ serviceId }: { serviceId?: string }) 
         software: [],
         image: '',
         color: 'blue',
+        outcome: 'Enhanced Efficiency',
+        order: 0,
         active: true,
     });
 
@@ -159,6 +163,28 @@ export default function AdminServiceForm({ serviceId }: { serviceId?: string }) 
                         type="text"
                         value={form.image}
                         onChange={(e) => setForm({ ...form, image: e.target.value })}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                    />
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Outcome Text</label>
+                    <input
+                        type="text"
+                        value={form.outcome}
+                        onChange={(e) => setForm({ ...form, outcome: e.target.value })}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                        placeholder="e.g. Enhanced Efficiency"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Display Order</label>
+                    <input
+                        type="number"
+                        value={form.order}
+                        onChange={(e) => setForm({ ...form, order: parseInt(e.target.value) || 0 })}
                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                     />
                 </div>
