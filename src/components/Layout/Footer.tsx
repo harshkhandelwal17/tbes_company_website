@@ -61,8 +61,8 @@ const Footer = () => {
                   className="rounded-lg"
                 />
               </div>
-              <span className="text-2xl font-black tracking-tight uppercase italic">
-                TBES <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 not-italic">GLOBAL</span>
+              <span className="text-2xl font-black tracking-tight uppercase">
+                TBES <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">GLOBAL</span>
               </span>
             </Link>
 
