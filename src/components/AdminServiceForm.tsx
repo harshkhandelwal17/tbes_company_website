@@ -56,7 +56,18 @@ export default function AdminServiceForm({ serviceId }: { serviceId?: string }) 
             fetch(`/api/services/${serviceId}`)
                 .then((res) => res.json())
                 .then((data) => {
-                    setForm(data);
+                    // Merge with defaults to ensure all fields exist
+                    setForm({
+                        ...form,
+                        ...data,
+                        benefits: data.benefits || [],
+                        features: data.features || [],
+                        process: data.process || [],
+                        keyDeliverables: data.keyDeliverables || [],
+                        faqs: data.faqs || [],
+                        details: data.details || [],
+                        software: data.software || [],
+                    });
                     setLoading(false);
                 })
                 .catch((err) => {
@@ -100,17 +111,17 @@ export default function AdminServiceForm({ serviceId }: { serviceId?: string }) 
         index: number,
         value: string
     ) => {
-        const newArray = [...form[field]];
+        const newArray = [...(form[field] || [])];
         newArray[index] = value;
         setForm({ ...form, [field]: newArray });
     };
 
     const addArrayItem = (field: 'details' | 'software' | 'benefits' | 'features' | 'keyDeliverables') => {
-        setForm({ ...form, [field]: [...form[field], ''] });
+        setForm({ ...form, [field]: [...(form[field] || []), ''] });
     };
 
     const removeArrayItem = (field: 'details' | 'software' | 'benefits' | 'features' | 'keyDeliverables', index: number) => {
-        const newArray = [...form[field]];
+        const newArray = [...(form[field] || [])];
         newArray.splice(index, 1);
         setForm({ ...form, [field]: newArray });
     };
@@ -122,7 +133,7 @@ export default function AdminServiceForm({ serviceId }: { serviceId?: string }) 
         subField: string,
         value: string
     ) => {
-        const newArray = [...form[field]] as any[];
+        const newArray = [...(form[field] || [])] as any[];
         newArray[index] = { ...newArray[index], [subField]: value };
         setForm({ ...form, [field]: newArray });
     };
@@ -131,11 +142,11 @@ export default function AdminServiceForm({ serviceId }: { serviceId?: string }) 
         const newItem = field === 'process'
             ? { title: '', description: '' }
             : { question: '', answer: '' };
-        setForm({ ...form, [field]: [...form[field], newItem] as any });
+        setForm({ ...form, [field]: [...(form[field] || []), newItem] as any });
     };
 
     const removeComplexItem = (field: 'process' | 'faqs', index: number) => {
-        const newArray = [...form[field]];
+        const newArray = [...(form[field] || [])];
         newArray.splice(index, 1);
         setForm({ ...form, [field]: newArray });
     };
@@ -253,6 +264,17 @@ export default function AdminServiceForm({ serviceId }: { serviceId?: string }) 
                 >
                     <Plus size={16} /> Add Detail
                 </button>
+            </div>
+
+            {/* =========================================
+                ADVANCED TECHNICAL DATA
+            ========================================= */}
+            <div className="pt-8 border-t border-gray-100">
+                <div className="flex items-center gap-2 mb-6">
+                    <div className="w-1.5 h-6 bg-blue-600 rounded-full"></div>
+                    <h3 className="text-xl font-bold text-gray-900">Advanced Technical Data</h3>
+                    <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">New Showcase Fields</span>
+                </div>
             </div>
 
             {/* Benefits */}
