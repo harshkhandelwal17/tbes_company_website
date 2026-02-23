@@ -89,7 +89,11 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
     setModelFileName(file.name);
 
     const uploadFormData = new FormData();
-    uploadFormData.append('model', file);
+    uploadFormData.append('file', file);
+    uploadFormData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'tbes-projects');
+
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dcha7gy9o';
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`;
 
     const xhr = new XMLHttpRequest();
 
@@ -105,27 +109,28 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
           const response = JSON.parse(xhr.responseText);
-          if (response.success) {
+          // Cloudinary response for 'raw' files includes secure_url
+          if (response.secure_url) {
             setFormData(prev => ({
               ...prev,
-              modelUrl: response.modelUrl,
-              modelType: response.modelType,
+              modelUrl: response.secure_url,
+              modelType: file.name.split('.').pop()?.toLowerCase() || 'glb',
             }));
             setModelUploadProgress(100);
           } else {
-            setModelUploadError(response.error || 'Upload failed');
+            setModelUploadError('Cloudinary upload failed: No URL returned');
             setModelUploadProgress(0);
           }
         } catch {
-          setModelUploadError('Invalid response from server');
+          setModelUploadError('Invalid response from Cloudinary');
           setModelUploadProgress(0);
         }
       } else {
         try {
           const errResponse = JSON.parse(xhr.responseText);
-          setModelUploadError(errResponse.error || `Upload failed (${xhr.status})`);
+          setModelUploadError(errResponse.error?.message || `Cloudinary Error (${xhr.status})`);
         } catch {
-          setModelUploadError(`Upload failed with status ${xhr.status}`);
+          setModelUploadError(`Cloudinary Error with status ${xhr.status}`);
         }
         setModelUploadProgress(0);
       }
@@ -133,7 +138,7 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
 
     xhr.addEventListener('error', () => {
       setIsModelUploading(false);
-      setModelUploadError('Network error — please check your connection and try again');
+      setModelUploadError('Network error — please check your connection and Cloudinary settings');
       setModelUploadProgress(0);
     });
 
@@ -143,7 +148,7 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
       setModelUploadProgress(0);
     });
 
-    xhr.open('POST', '/api/admin/upload-model');
+    xhr.open('POST', uploadUrl);
     xhr.send(uploadFormData);
   };
 
@@ -640,8 +645,8 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
             type="submit"
             disabled={isSubmitting || isModelUploading}
             className={`px-4 py-2 rounded-md text-white transition-all ${isModelUploading
-                ? 'bg-amber-400 cursor-not-allowed opacity-70'
-                : 'bg-blue-600 hover:bg-blue-700 disabled:opacity-50'
+              ? 'bg-amber-400 cursor-not-allowed opacity-70'
+              : 'bg-blue-600 hover:bg-blue-700 disabled:opacity-50'
               }`}
           >
             {isModelUploading

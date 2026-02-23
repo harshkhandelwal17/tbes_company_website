@@ -79,8 +79,12 @@ export default function ThreeDViewer({ modelUrl, modelType, className = "h-[400p
         setMounted(true);
     }, []);
 
-    // Determine type if not provided
-    const type = modelType || modelUrl.split('.').pop()?.toLowerCase() || 'glb';
+    // Determine type: Prioritize URL extension if it's a known format, otherwise use modelType
+    const urlType = modelUrl.split('?')[0].split('.').pop()?.toLowerCase();
+    const knownTypes = ['glb', 'gltf', 'fbx', 'obj', 'stl'];
+    const type = (urlType && knownTypes.includes(urlType))
+        ? urlType
+        : (modelType?.toLowerCase() || 'glb');
 
     if (!mounted) return null;
 

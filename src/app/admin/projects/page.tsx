@@ -145,7 +145,11 @@ export default function AdminProjectsPage() {
     setNewModelFile(file);
 
     const uploadFormData = new FormData();
-    uploadFormData.append('model', file);
+    uploadFormData.append('file', file);
+    uploadFormData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'tbes-projects');
+
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dcha7gy9o';
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`;
 
     const xhr = new XMLHttpRequest();
 
@@ -161,25 +165,29 @@ export default function AdminProjectsPage() {
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
           const response = JSON.parse(xhr.responseText);
-          if (response.success) {
-            setFormData(prev => ({ ...prev, modelUrl: response.modelUrl }));
+          if (response.secure_url) {
+            setFormData(prev => ({
+              ...prev,
+              modelUrl: response.secure_url,
+              modelType: file.name.split('.').pop()?.toLowerCase() || 'glb'
+            }));
             setModelUploadProgress(100);
           } else {
-            setModelUploadError(response.error || 'Upload failed');
+            setModelUploadError('Cloudinary upload failed: No URL returned');
             setModelUploadProgress(0);
             setNewModelFile(null);
           }
         } catch {
-          setModelUploadError('Invalid server response');
+          setModelUploadError('Invalid response from Cloudinary');
           setModelUploadProgress(0);
           setNewModelFile(null);
         }
       } else {
         try {
           const errRes = JSON.parse(xhr.responseText);
-          setModelUploadError(errRes.error || `Upload failed (${xhr.status})`);
+          setModelUploadError(errRes.error?.message || `Cloudinary Error (${xhr.status})`);
         } catch {
-          setModelUploadError(`Upload failed with status ${xhr.status}`);
+          setModelUploadError(`Cloudinary Error with status ${xhr.status}`);
         }
         setModelUploadProgress(0);
         setNewModelFile(null);
@@ -188,12 +196,12 @@ export default function AdminProjectsPage() {
 
     xhr.addEventListener('error', () => {
       setIsModelUploading(false);
-      setModelUploadError('Network error — check your connection and try again');
+      setModelUploadError('Network error — check your Cloudinary settings');
       setModelUploadProgress(0);
       setNewModelFile(null);
     });
 
-    xhr.open('POST', '/api/admin/upload-model');
+    xhr.open('POST', uploadUrl);
     xhr.send(uploadFormData);
   };
 

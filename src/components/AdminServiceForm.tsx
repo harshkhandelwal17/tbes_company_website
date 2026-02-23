@@ -85,10 +85,21 @@ export default function AdminServiceForm({ serviceId }: { serviceId?: string }) 
             const url = serviceId ? `/api/services/${serviceId}` : '/api/services';
             const method = serviceId ? 'PUT' : 'POST';
 
+            const cleanedForm = {
+                ...form,
+                details: (form.details || []).filter(item => item.trim() !== ''),
+                software: (form.software || []).filter(item => item.trim() !== ''),
+                benefits: (form.benefits || []).filter(item => item.trim() !== ''),
+                features: (form.features || []).filter(item => item.trim() !== ''),
+                keyDeliverables: (form.keyDeliverables || []).filter(item => item.trim() !== ''),
+                process: (form.process || []).filter(item => item.title.trim() !== '' && item.description.trim() !== ''),
+                faqs: (form.faqs || []).filter(item => item.question.trim() !== '' && item.answer.trim() !== ''),
+            };
+
             const res = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form),
+                body: JSON.stringify(cleanedForm),
             });
 
             if (res.ok) {

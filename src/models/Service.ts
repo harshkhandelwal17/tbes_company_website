@@ -31,6 +31,9 @@ const serviceSchema = new Schema(
     { timestamps: true }
 );
 
-// Avoid model overwrite issue in dev
-const Service = models.Service || model("Service", serviceSchema);
+// Avoid model overwrite issue in dev and force schema refresh
+if (models.Service) {
+    delete (mongoose as any).models.Service;
+}
+const Service = model("Service", serviceSchema);
 export default Service;
