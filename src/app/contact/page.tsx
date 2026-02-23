@@ -288,7 +288,7 @@ export default function ContactPage() {
                   <Globe2 className="text-blue-400 mb-4" size={28} />
                   <h4 className="text-lg sm:text-xl font-bold text-white mb-2">Global Service Standards</h4>
                   <p className="text-slate-400 text-xs sm:text-sm leading-relaxed mb-4">
-                     We deliver ISO-19650 compliant BIM models to clients across the USA, UK, Middle East, and Australia.
+                     We deliver ISO-19650 compliant BIM models to clients across the USA, UK, Europe, and Middle East.
                   </p>
                   <div className="flex gap-2 flex-wrap">
                      {['🇺🇸', '🇬🇧', '🇦🇪', '🇦🇺', '🇮🇳'].map(flag => (

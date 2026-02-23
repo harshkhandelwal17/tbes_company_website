@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -7,7 +8,25 @@ import {
   Instagram, Facebook, ArrowRight, ExternalLink, Heart
 } from 'lucide-react';
 
+interface FooterService {
+  _id: string;
+  title: string;
+  slug: string;
+}
+
 const Footer = () => {
+  const [services, setServices] = useState<FooterService[]>([]);
+
+  useEffect(() => {
+    fetch('/api/services')
+      .then(res => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setServices(data);
+        }
+      })
+      .catch(() => { });
+  }, []);
   const currentYear = new Date().getFullYear();
 
   return (
@@ -104,17 +123,29 @@ const Footer = () => {
               <span className="w-2 h-2 rounded-full bg-cyan-500"></span> Solutions
             </h4>
             <ul className="space-y-4">
-              {['BIM Modeling', 'Scan to BIM', 'MEP Coordination', 'CAD Services', 'Structural Analysis'].map((service) => (
-                <li key={service}>
+              {services.length > 0 ? (
+                services.map((service) => (
+                  <li key={service._id}>
+                    <Link
+                      href={`/services/${service.slug}`}
+                      className="text-slate-400 text-sm hover:text-cyan-400 transition-all duration-300 flex items-center group inline-flex"
+                    >
+                      <div className="w-1.5 h-1.5 rounded-full bg-white/20 mr-3 group-hover:bg-cyan-400 transition-colors"></div>
+                      <span className="group-hover:translate-x-1 transition-transform duration-300">{service.title}</span>
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                <li>
                   <Link
                     href="/services"
                     className="text-slate-400 text-sm hover:text-cyan-400 transition-all duration-300 flex items-center group inline-flex"
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-white/20 mr-3 group-hover:bg-cyan-400 transition-colors"></div>
-                    <span className="group-hover:translate-x-1 transition-transform duration-300">{service}</span>
+                    <span className="group-hover:translate-x-1 transition-transform duration-300">View All Services</span>
                   </Link>
                 </li>
-              ))}
+              )}
             </ul>
           </div>
 

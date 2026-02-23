@@ -1,7 +1,8 @@
 'use client';
 
 import { Building2, Users2, Layers, Globe2 } from 'lucide-react';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
+import { getProjectCount } from '@/lib/companyStats';
 
 // --- Counter Hook (Same as before) ---
 const Counter = ({ end, duration = 2000 }: { end: number, duration?: number }) => {
@@ -48,10 +49,12 @@ const Counter = ({ end, duration = 2000 }: { end: number, duration?: number }) =
 };
 
 const Stats = () => {
+  const projectCount = useMemo(() => getProjectCount(), []);
+
   const stats = [
     {
       icon: Building2,
-      value: 200,
+      value: projectCount,
       suffix: "+",
       label: "Projects Delivered",
       desc: "Residential & Commercial"
@@ -61,37 +64,37 @@ const Stats = () => {
       value: 5,
       suffix: "M+",
       label: "Sq. Ft. Modeled",
-      desc: "LOD 300-500 Precision"
+      desc: "High Fidelity Models"
     },
     {
       icon: Users2,
       value: 50,
       suffix: "+",
       label: "Happy Clients",
-      desc: "USA, UK, UAE & India"
+      desc: " USA, UK, Europe, and Middle East"
     },
     {
       icon: Globe2,
       value: 100,
       suffix: "%",
       label: "On-Time Delivery",
-      desc: "ISO Certified Process"
+      desc: "Deadline Guarantee"
     }
   ];
 
   return (
     <section className="relative z-30 px-4 sm:px-6 lg:px-8 pointer-events-none bg-white lg:bg-transparent pb-10 lg:pb-0">
       <div className="max-w-7xl mx-auto">
-        
+
         {/* CHANGE 1: MARGIN LOGIC 
            Mobile: mt-10 (Creates space below Hero, NO overlap)
            Desktop: -mt-24 (Keeps the overlap effect you liked)
         */}
         <div className="relative mt-10 lg:-mt-24 pointer-events-auto">
-          
+
           {/* Main Container */}
           <div className="bg-white rounded-2xl shadow-xl lg:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] overflow-hidden border border-slate-100 relative group">
-            
+
             {/* Gradient Line */}
             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-cyan-500 to-emerald-400"></div>
 
@@ -105,10 +108,10 @@ const Stats = () => {
             <div className="grid grid-cols-2 lg:grid-cols-4 relative z-10">
               {stats.map((stat, index) => {
                 const Icon = stat.icon;
-                
+
                 return (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className={`
                       relative p-5 lg:p-10 flex flex-col items-center text-center transition-all duration-300
                       hover:bg-slate-50 cursor-default group/item

@@ -1,7 +1,6 @@
 //AdminProjectForm.tsx
 import { useState, useRef, useEffect } from 'react';
 import { Project, ProjectFormData, FILTER_OPTIONS } from '@/types';
-import { CldUploadWidget } from 'next-cloudinary';
 
 interface AdminProjectFormProps {
   project?: Project | null;
@@ -70,7 +69,91 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
   const [imagePreviews, setImagePreviews] = useState<string[]>(project?.imageUrl ? [project.imageUrl] : []);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 3D Model upload states
+  const [modelUploadProgress, setModelUploadProgress] = useState(0);
+  const [isModelUploading, setIsModelUploading] = useState(false);
+  const [modelUploadError, setModelUploadError] = useState('');
+  const [modelFileName, setModelFileName] = useState(project?.modelUrl ? project.modelUrl.split('/').pop() || '' : '');
+
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const modelInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle 3D model file upload with progress
+  const handleModelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setModelUploadError('');
+    setModelUploadProgress(0);
+    setIsModelUploading(true);
+    setModelFileName(file.name);
+
+    const uploadFormData = new FormData();
+    uploadFormData.append('model', file);
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener('progress', (event) => {
+      if (event.lengthComputable) {
+        const percent = Math.round((event.loaded / event.total) * 100);
+        setModelUploadProgress(percent);
+      }
+    });
+
+    xhr.addEventListener('load', () => {
+      setIsModelUploading(false);
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          if (response.success) {
+            setFormData(prev => ({
+              ...prev,
+              modelUrl: response.modelUrl,
+              modelType: response.modelType,
+            }));
+            setModelUploadProgress(100);
+          } else {
+            setModelUploadError(response.error || 'Upload failed');
+            setModelUploadProgress(0);
+          }
+        } catch {
+          setModelUploadError('Invalid response from server');
+          setModelUploadProgress(0);
+        }
+      } else {
+        try {
+          const errResponse = JSON.parse(xhr.responseText);
+          setModelUploadError(errResponse.error || `Upload failed (${xhr.status})`);
+        } catch {
+          setModelUploadError(`Upload failed with status ${xhr.status}`);
+        }
+        setModelUploadProgress(0);
+      }
+    });
+
+    xhr.addEventListener('error', () => {
+      setIsModelUploading(false);
+      setModelUploadError('Network error — please check your connection and try again');
+      setModelUploadProgress(0);
+    });
+
+    xhr.addEventListener('abort', () => {
+      setIsModelUploading(false);
+      setModelUploadError('Upload cancelled');
+      setModelUploadProgress(0);
+    });
+
+    xhr.open('POST', '/api/admin/upload-model');
+    xhr.send(uploadFormData);
+  };
+
+  const removeModel = () => {
+    setFormData(prev => ({ ...prev, modelUrl: '', modelType: '' }));
+    setModelFileName('');
+    setModelUploadProgress(0);
+    setModelUploadError('');
+    if (modelInputRef.current) modelInputRef.current.value = '';
+  };
 
   // Convert sqm to sqft
   const convertSqmToSqft = (sqm: number): number => {
@@ -150,6 +233,12 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Block submission if model is still uploading
+    if (isModelUploading) {
+      alert('3D Model abhi upload ho raha hai, please wait until upload completes!');
+      return;
+    }
 
     if (!project && imageFiles.length === 0) {
       alert('Please select at least one image for new projects');
@@ -440,68 +529,105 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
             </div>
           )}
         </div>
-        {/* 3D Model Upload (Cloudinary) */}
+        {/* 3D Model Upload with Progress */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            3D Model (OBJ/FBX/GLTF)
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            3D Model (FBX / OBJ / GLTF / GLB / STL / IFC)
           </label>
 
-          <div className="flex items-center gap-4">
-            <CldUploadWidget
-              uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "tbes-projects"}
-              onSuccess={(result: any) => {
-                if (result.info?.secure_url) {
-                  const url = result.info.secure_url;
-                  const extension = url.split('.').pop()?.toLowerCase();
-
-                  setFormData(prev => ({
-                    ...prev,
-                    modelUrl: url,
-                    modelType: extension
-                  }));
-                }
-              }}
-              options={{
-                sources: ['local', 'url'],
-                resourceType: 'raw', // Important for 3D files
-                clientAllowedFormats: ['obj', 'fbx', 'gltf', 'glb'],
-                maxFileSize: 100000000, // 100MB
-              }}
+          {/* Upload area */}
+          {!formData.modelUrl && !isModelUploading && (
+            <div
+              className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-indigo-400 hover:bg-indigo-50/50 transition-all cursor-pointer"
+              onClick={() => modelInputRef.current?.click()}
             >
-              {({ open }) => {
-                return (
-                  <button
-                    type="button"
-                    onClick={() => open()}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
-                  >
-                    Upload 3D Model
-                  </button>
-                );
-              }}
-            </CldUploadWidget>
+              <input
+                type="file"
+                ref={modelInputRef}
+                onChange={handleModelUpload}
+                accept=".fbx,.obj,.gltf,.glb,.stl,.step,.iges,.ifc,.3ds,.dae,.rvt,.nwd,.nwc"
+                className="hidden"
+              />
+              <div className="text-4xl mb-2">📦</div>
+              <p className="text-sm font-medium text-gray-700">Click to upload 3D Model</p>
+              <p className="text-xs text-gray-500 mt-1">FBX, OBJ, GLTF, GLB, STL, IFC up to 200MB</p>
+            </div>
+          )}
 
-            {formData.modelUrl && (
-              <div className="text-sm text-green-600 flex items-center">
-                <span className="mr-2">✓ Model Uploaded</span>
+          {/* Upload Progress */}
+          {isModelUploading && (
+            <div className="border border-indigo-200 bg-indigo-50 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full"></div>
+                  <span className="text-sm font-medium text-indigo-700">Uploading...</span>
+                </div>
+                <span className="text-sm font-bold text-indigo-700">{modelUploadProgress}%</span>
+              </div>
+              <div className="w-full bg-indigo-100 rounded-full h-3 overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-indigo-500 to-blue-500 h-3 rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${modelUploadProgress}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-indigo-600 mt-2 truncate">📄 {modelFileName}</p>
+            </div>
+          )}
+
+          {/* Upload Error */}
+          {modelUploadError && (
+            <div className="border border-red-200 bg-red-50 rounded-lg p-4 mt-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-red-500">❌</span>
+                  <span className="text-sm text-red-700">{modelUploadError}</span>
+                </div>
                 <button
                   type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, modelUrl: '', modelType: '' }))}
-                  className="text-red-500 hover:text-red-700 text-xs underline"
+                  onClick={() => { setModelUploadError(''); modelInputRef.current?.click(); }}
+                  className="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded-md transition"
                 >
-                  Remove
+                  Retry
                 </button>
               </div>
-            )}
-          </div>
-          {formData.modelUrl && (
-            <div className="mt-1 text-xs text-gray-500 break-all">
-              URL: {formData.modelUrl}
+            </div>
+          )}
+
+          {/* Upload Success */}
+          {formData.modelUrl && !isModelUploading && (
+            <div className="border border-green-200 bg-green-50 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-green-500 text-xl">✅</span>
+                  <div>
+                    <p className="text-sm font-medium text-green-700">Model Uploaded Successfully!</p>
+                    <p className="text-xs text-green-600 truncate max-w-xs">{modelFileName || formData.modelUrl}</p>
+                    {formData.modelType && (
+                      <span className="inline-block mt-1 text-[10px] bg-green-200 text-green-800 px-2 py-0.5 rounded-full uppercase font-bold">
+                        {formData.modelType}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={removeModel}
+                  className="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded-md transition flex items-center gap-1"
+                >
+                  🗑️ Remove
+                </button>
+              </div>
             </div>
           )}
         </div>
 
         {/* Submit Buttons */}
+        {isModelUploading && (
+          <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-700">
+            <div className="animate-spin w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full"></div>
+            <span className="text-sm font-medium">3D Model upload in progress... Please wait before saving.</span>
+          </div>
+        )}
         < div className="flex justify-end space-x-4 pt-6 border-t" >
           <button
             type="button"
@@ -512,14 +638,19 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
           </button>
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+            disabled={isSubmitting || isModelUploading}
+            className={`px-4 py-2 rounded-md text-white transition-all ${isModelUploading
+                ? 'bg-amber-400 cursor-not-allowed opacity-70'
+                : 'bg-blue-600 hover:bg-blue-700 disabled:opacity-50'
+              }`}
           >
-            {isSubmitting
-              ? 'Saving...'
-              : project
-                ? 'Update Project'
-                : 'Create Project'
+            {isModelUploading
+              ? '⏳ Model Uploading...'
+              : isSubmitting
+                ? 'Saving...'
+                : project
+                  ? 'Update Project'
+                  : 'Create Project'
             }
           </button>
         </div >

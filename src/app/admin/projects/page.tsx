@@ -50,6 +50,13 @@ export default function AdminProjectsPage() {
   // --- Progress Bar State ---
   const [uploadProgress, setUploadProgress] = useState(0);
 
+  // --- 3D Model Upload States ---
+  const [isModelUploading, setIsModelUploading] = useState(false);
+  const [modelUploadProgress, setModelUploadProgress] = useState(0);
+  const [modelUploadError, setModelUploadError] = useState('');
+  const [modelFileName, setModelFileName] = useState('');
+  const [modelFileSize, setModelFileSize] = useState(0);
+
   // --- Fetch Data ---
   useEffect(() => {
     fetchProjects();
@@ -91,6 +98,11 @@ export default function AdminProjectsPage() {
     setNewImagePreviews([]);
     setNewModelFile(null);
     setUploadProgress(0);
+    setIsModelUploading(false);
+    setModelUploadProgress(0);
+    setModelUploadError('');
+    setModelFileName('');
+    setModelFileSize(0);
     setIsFormOpen(true);
   };
 
@@ -120,24 +132,96 @@ export default function AdminProjectsPage() {
     }));
   };
 
-  // --- 2. Model Handlers ---
+  // --- 2. Model Handlers (Immediate Upload with Progress) ---
   const handleModelSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setNewModelFile(e.target.files[0]);
-    }
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setModelUploadError('');
+    setModelUploadProgress(0);
+    setIsModelUploading(true);
+    setModelFileName(file.name);
+    setModelFileSize(file.size);
+    setNewModelFile(file);
+
+    const uploadFormData = new FormData();
+    uploadFormData.append('model', file);
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener('progress', (event) => {
+      if (event.lengthComputable) {
+        const percent = Math.round((event.loaded / event.total) * 100);
+        setModelUploadProgress(percent);
+      }
+    });
+
+    xhr.addEventListener('load', () => {
+      setIsModelUploading(false);
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          if (response.success) {
+            setFormData(prev => ({ ...prev, modelUrl: response.modelUrl }));
+            setModelUploadProgress(100);
+          } else {
+            setModelUploadError(response.error || 'Upload failed');
+            setModelUploadProgress(0);
+            setNewModelFile(null);
+          }
+        } catch {
+          setModelUploadError('Invalid server response');
+          setModelUploadProgress(0);
+          setNewModelFile(null);
+        }
+      } else {
+        try {
+          const errRes = JSON.parse(xhr.responseText);
+          setModelUploadError(errRes.error || `Upload failed (${xhr.status})`);
+        } catch {
+          setModelUploadError(`Upload failed with status ${xhr.status}`);
+        }
+        setModelUploadProgress(0);
+        setNewModelFile(null);
+      }
+    });
+
+    xhr.addEventListener('error', () => {
+      setIsModelUploading(false);
+      setModelUploadError('Network error — check your connection and try again');
+      setModelUploadProgress(0);
+      setNewModelFile(null);
+    });
+
+    xhr.open('POST', '/api/admin/upload-model');
+    xhr.send(uploadFormData);
   };
 
   const removeNewModel = () => {
     setNewModelFile(null);
+    setFormData(prev => ({ ...prev, modelUrl: '' }));
+    setModelFileName('');
+    setModelFileSize(0);
+    setModelUploadProgress(0);
+    setModelUploadError('');
   };
 
   const removeExistingModel = () => {
     setFormData(prev => ({ ...prev, modelUrl: '' }));
+    setModelFileName('');
+    setModelFileSize(0);
   };
 
   // --- Submit with Progress Simulation ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Block submit if model is still uploading
+    if (isModelUploading) {
+      alert('3D Model abhi upload ho raha hai, please wait!');
+      return;
+    }
+
     setIsSubmitting(true);
     setUploadProgress(0);
 
@@ -165,16 +249,15 @@ export default function AdminProjectsPage() {
         }
       });
 
-      // Handle Model Logic
+      // Handle Model Logic - model is already uploaded, just pass the URL
       if (formData.modelUrl) {
-        uploadData.append('existingModelUrl', formData.modelUrl);
+        uploadData.append('modelUrl', formData.modelUrl);
       }
 
       if (editingProject) uploadData.append('id', editingProject.id);
 
-      // Append NEW Files
+      // Append NEW image files only (model already uploaded separately)
       newImageFiles.forEach((file) => uploadData.append('newImages', file));
-      if (newModelFile) uploadData.append('newModel', newModelFile);
 
       const url = '/api/admin/projects';
       const method = editingProject ? 'PUT' : 'POST';
@@ -314,7 +397,7 @@ export default function AdminProjectsPage() {
 
             <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar relative">
 
-              {/* --- UPLOAD PROGRESS OVERLAY --- */}
+              {/* --- SAVING PROGRESS OVERLAY --- */}
               {isSubmitting && (
                 <div className="absolute inset-0 z-20 bg-[#0c0c0e]/95 backdrop-blur-sm flex flex-col items-center justify-center p-8 transition-all duration-300">
                   <div className="w-full max-w-md space-y-6 text-center">
@@ -325,7 +408,7 @@ export default function AdminProjectsPage() {
                         <div className="w-16 h-16 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
                         <div className="absolute inset-0 flex items-center justify-center font-bold text-xs text-white">{uploadProgress}%</div>
                       </div>
-                      <span className="text-2xl font-bold text-white animate-pulse">Uploading Assets...</span>
+                      <span className="text-2xl font-bold text-white animate-pulse">Saving Project...</span>
                     </div>
 
                     {/* Progress Bar */}
@@ -338,7 +421,7 @@ export default function AdminProjectsPage() {
 
                     <div className="space-y-1">
                       <p className="text-sm text-zinc-300">Please do not close this window.</p>
-                      <p className="text-xs text-zinc-500">Large 3D models may take a few minutes.</p>
+                      <p className="text-xs text-zinc-500">Uploading images and saving project details...</p>
                     </div>
                   </div>
                 </div>
@@ -433,42 +516,81 @@ export default function AdminProjectsPage() {
                     </div>
                   </div>
 
-                  {/* 2. 3D Model */}
+                  {/* 2. 3D Model - Immediate Upload with Progress */}
                   <div className="space-y-3">
                     <label className="text-xs font-medium text-zinc-400 flex items-center gap-2">
                       <Cuboid size={14} className="text-indigo-400" /> 3D Model
                     </label>
 
-                    {newModelFile ? (
-                      <div className="flex items-center justify-between p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl animate-in fade-in">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-400"><FileCode size={20} /></div>
-                          <div>
-                            <p className="text-sm font-bold text-white truncate max-w-[200px]">{newModelFile.name}</p>
-                            <p className="text-xs text-indigo-300">{(newModelFile.size / (1024 * 1024)).toFixed(2)} MB • Ready to upload</p>
+                    {/* Uploading State - Progress Bar */}
+                    {isModelUploading && (
+                      <div className="p-4 bg-indigo-500/10 border border-indigo-500/30 rounded-xl animate-in fade-in">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className="relative">
+                              <div className="w-10 h-10 border-3 border-indigo-500/30 border-t-indigo-400 rounded-full animate-spin"></div>
+                              <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-indigo-300">{modelUploadProgress}%</div>
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-white">Uploading Model...</p>
+                              <p className="text-xs text-indigo-300 truncate max-w-[200px]">{modelFileName} • {(modelFileSize / (1024 * 1024)).toFixed(1)} MB</p>
+                            </div>
                           </div>
                         </div>
-                        <button type="button" onClick={removeNewModel} className="p-2 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"><X size={18} /></button>
+                        <div className="w-full bg-zinc-800 rounded-full h-2.5 overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full transition-all duration-300 ease-out shadow-[0_0_8px_rgba(99,102,241,0.5)]"
+                            style={{ width: `${modelUploadProgress}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-[10px] text-indigo-400 mt-2">Please wait... Do not close this window.</p>
                       </div>
-                    ) : formData.modelUrl ? (
-                      <div className="flex items-center justify-between p-4 bg-zinc-900 border border-white/10 rounded-xl">
+                    )}
+
+                    {/* Error State */}
+                    {modelUploadError && !isModelUploading && (
+                      <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-red-400">✕</span>
+                            <span className="text-sm text-red-300">{modelUploadError}</span>
+                          </div>
+                          <label className="px-3 py-1.5 bg-red-500/20 text-red-300 hover:bg-red-500 hover:text-white rounded-lg text-xs font-bold transition-all cursor-pointer">
+                            Retry
+                            <input type="file" accept=".glb,.gltf,.fbx,.obj,.stl,.ifc" onChange={handleModelSelection} className="hidden" />
+                          </label>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Success State - Model Uploaded */}
+                    {formData.modelUrl && !isModelUploading && !modelUploadError && (
+                      <div className="flex items-center justify-between p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl animate-in fade-in">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-white/5 rounded-lg text-zinc-300"><Database size={20} /></div>
+                          <div className="p-2 bg-emerald-500/20 rounded-lg text-emerald-400">
+                            <CheckCircle2 size={20} />
+                          </div>
                           <div>
-                            <p className="text-sm font-bold text-white">Current 3D Model</p>
-                            <p className="text-xs text-zinc-500 text-ellipsis max-w-[200px] overflow-hidden whitespace-nowrap">{formData.modelUrl.split('/').pop()}</p>
+                            <p className="text-sm font-bold text-white">Model Uploaded ✓</p>
+                            <p className="text-xs text-emerald-300 truncate max-w-[200px]">
+                              {modelFileName || formData.modelUrl.split('/').pop()}
+                              {modelFileSize > 0 && ` • ${(modelFileSize / (1024 * 1024)).toFixed(1)} MB`}
+                            </p>
                           </div>
                         </div>
-                        <button type="button" onClick={removeExistingModel} className="px-3 py-1.5 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-lg text-xs font-bold transition-all">Remove & Replace</button>
+                        <button type="button" onClick={removeNewModel} className="px-3 py-1.5 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-lg text-xs font-bold transition-all">Remove</button>
                       </div>
-                    ) : (
+                    )}
+
+                    {/* Default - Upload Area (only show when no model and not uploading) */}
+                    {!formData.modelUrl && !isModelUploading && !modelUploadError && (
                       <div className="border-2 border-dashed border-white/10 rounded-xl p-6 text-center hover:bg-white/5 hover:border-indigo-500/30 transition-all relative group cursor-pointer">
-                        <input type="file" accept=".glb,.gltf,.fbx,.obj" onChange={handleModelSelection} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
+                        <input type="file" accept=".glb,.gltf,.fbx,.obj,.stl,.ifc" onChange={handleModelSelection} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
                         <div className="flex flex-col items-center gap-2 text-zinc-400 group-hover:text-indigo-400 transition-colors">
                           <Cuboid size={28} />
                           <div>
                             <p className="text-sm font-bold text-zinc-300 group-hover:text-white">Upload 3D Asset</p>
-                            <p className="text-xs text-zinc-500 mt-1">.FBX, .OBJ, .GLB supported</p>
+                            <p className="text-xs text-zinc-500 mt-1">.FBX, .OBJ, .GLB, .STL, .IFC supported (up to 200MB)</p>
                           </div>
                         </div>
                       </div>
@@ -479,16 +601,29 @@ export default function AdminProjectsPage() {
               </form>
             </div>
 
-            <div className="p-6 border-t border-white/10 bg-[#0c0c0e] rounded-b-3xl">
+            <div className="p-6 border-t border-white/10 bg-[#0c0c0e] rounded-b-3xl space-y-3">
+              {/* Warning when model is uploading */}
+              {isModelUploading && (
+                <div className="flex items-center gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-300">
+                  <Loader2 size={16} className="animate-spin" />
+                  <span className="text-sm font-medium">3D Model upload in progress... Please wait before saving.</span>
+                </div>
+              )}
               <button
                 onClick={handleSubmit}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isModelUploading}
                 className={`w-full py-4 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2
-                  ${isSubmitting
-                    ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-white/5'
-                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white active:scale-[0.98]'}`}
+                  ${isModelUploading
+                    ? 'bg-amber-500/20 text-amber-300 cursor-not-allowed border border-amber-500/20'
+                    : isSubmitting
+                      ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-white/5'
+                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white active:scale-[0.98]'}`}
               >
-                {isSubmitting ? 'Processing...' : <><Save size={18} /> Save Project</>}
+                {isModelUploading
+                  ? <><Loader2 size={18} className="animate-spin" /> Model Uploading — Please Wait</>
+                  : isSubmitting
+                    ? 'Processing...'
+                    : <><Save size={18} /> Save Project</>}
               </button>
             </div>
 

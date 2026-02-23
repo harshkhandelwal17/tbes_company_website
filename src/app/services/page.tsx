@@ -92,9 +92,7 @@ export default async function ServicesPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
 
                     {/* Floating Icon Badge */}
-                    <div className="absolute bottom-6 left-6 w-16 h-16 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center text-white shadow-lg">
-                      <DynamicIcon name={service.icon} size={32} />
-                    </div>
+                   
                   </div>
 
                   {/* Decorative Blob */}
