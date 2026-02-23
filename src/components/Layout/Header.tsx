@@ -51,7 +51,7 @@ const Header = () => {
               <Mail size={14} /> info@tbesglobal.com
             </a>
             <a href="tel:+919876543210" className="flex items-center gap-2 hover:text-white transition-colors">
-              <Phone size={14} /> +91 987 654 3210
+              <Phone size={14} /> +91 6294796582
             </a>
           </div>
         </div>
@@ -182,7 +182,7 @@ const Header = () => {
              {/* Mobile Utility Info */}
              <div className="mt-6 space-y-3 text-center">
                 <a href="tel:+919876543210" className="block text-sm text-slate-500 hover:text-blue-700 font-medium">
-                  +91 987 654 3210
+                  +91 6294796582
                 </a>
                 <a href="mailto:info@tbesglobal.com" className="block text-sm text-slate-500 hover:text-blue-700">
                   info@tbesglobal.com
