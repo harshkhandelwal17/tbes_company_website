@@ -22,7 +22,7 @@ const Footer = () => {
       .then(res => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
-          setServices(data);
+          setServices(data.slice(0, 5));
         }
       })
       .catch(() => { });

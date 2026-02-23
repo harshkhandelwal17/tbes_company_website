@@ -2,7 +2,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import {
     ArrowLeft, CheckCircle2,
-    TrendingUp, Layers, Phone, Mail, FileText, ArrowRight
+    TrendingUp, Layers, Phone, Mail, FileText, ArrowRight,
+    Search, Workflow, PackageCheck, HelpCircle, ChevronDown, Monitor
 } from 'lucide-react';
 import connectDB from '@/lib/mongodb';
 import Service from '@/models/Service';
@@ -13,9 +14,15 @@ interface ServiceDocument {
     icon: string;
     description: string;
     details: string[];
+    software: string[];
     image: string;
     color?: string;
     slug: string;
+    benefits: string[];
+    features: string[];
+    process: { title: string; description: string }[];
+    keyDeliverables: string[];
+    faqs: { question: string; answer: string }[];
 }
 
 async function getService(slug: string): Promise<ServiceDocument | null> {
@@ -48,6 +55,7 @@ export default async function ServiceDetailPage({
         'Timely Delivery'
     ];
 
+    const displayBenefits = service.benefits && service.benefits.length > 0 ? service.benefits : benefits;
     const color = service.color || 'blue';
 
     return (
@@ -76,103 +84,186 @@ export default async function ServiceDetailPage({
                         >
                             <DynamicIcon name={service.icon} size={40} className="text-white" />
                         </div>
-                        <div>
-                            <span className="font-bold text-xs uppercase tracking-[0.2em] mb-2 block" style={{ color: `var(--color-${color}-500, ${color})` }}>Service Overview</span>
-                            <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight">{service.title}</h1>
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                                <span className="h-px w-8 bg-blue-500"></span>
+                                <span className="font-bold text-[10px] uppercase tracking-[0.3em]" style={{ color: `var(--color-${color}-500, ${color})` }}>Advanced BIM Strategy</span>
+                            </div>
+                            <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight leading-tight">{service.title}</h1>
                         </div>
                     </div>
                 </div>
             </section>
 
             {/* =========================================
-            2. CONTENT & SIDEBAR LAYOUT
+            2. MAIN CONTENT LAYOUT
         ========================================= */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-                <div className="grid lg:grid-cols-3 gap-12 lg:gap-16">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-6">
+                <div className="grid lg:grid-cols-12 gap-12 lg:gap-20">
 
                     {/* --- LEFT CONTENT COLUMN --- */}
-                    <div className="lg:col-span-2 space-y-16">
+                    <div className="lg:col-span-8 space-y-20">
 
-                        {/* Description */}
-                        <div>
-                            <h2 className="text-2xl font-bold text-white mb-6">About this Service</h2>
-                            <p className="text-lg text-slate-400 leading-relaxed font-light">
-                                {service.description}
-                            </p>
-                        </div>
+                        {/* Description & Features */}
+                        <div className="space-y-12">
+                            <div>
+                                <h2 className="text-3xl font-bold text-white mb-6">Service Overview</h2>
+                                <p className="text-lg text-slate-400 leading-relaxed font-light">
+                                    {service.description}
+                                </p>
+                            </div>
 
-                        {/* Capabilities Grid */}
-                        <div>
-                            <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-2">
-                                <Layers size={20} className="text-blue-500" />
-                                Key Capabilities
-                            </h3>
-                            <div className="grid sm:grid-cols-2 gap-4">
-                                {service.details.map((detail: string, index: number) => (
-                                    <div key={index} className="flex items-start gap-4 p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-blue-500/30 transition-all group">
-                                        <div className="mt-1 w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors shrink-0">
-                                            <CheckCircle2 size={14} />
+                            {/* Features Grid */}
+                            <div className="grid sm:grid-cols-2 gap-6">
+                                {service.features?.map((feature, idx) => (
+                                    <div key={idx} className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 flex gap-4 items-start group hover:bg-white/[0.04] transition-colors">
+                                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 shrink-0 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                            <TrendingUp size={18} />
                                         </div>
-                                        <span className="text-slate-300 text-sm font-medium">{detail}</span>
+                                        <div>
+                                            <h4 className="font-bold text-white mb-1">{feature}</h4>
+                                            <p className="text-xs text-slate-500">High-precision delivery ensuring project compliance.</p>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        {/* Benefits Box */}
-                        <div className="bg-gradient-to-br from-blue-900/10 to-transparent border border-blue-500/20 rounded-[2rem] p-8 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-24 bg-blue-500/5 blur-3xl rounded-full"></div>
-                            <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-2 relative z-10">
-                                <TrendingUp size={20} className="text-green-400" />
-                                The Business Impact
-                            </h3>
-                            <div className="space-y-4 relative z-10">
-                                {benefits.map((benefit: string, index: number) => (
-                                    <div key={index} className="flex items-center gap-4">
-                                        <div className="h-px flex-1 bg-gradient-to-r from-green-500/50 to-transparent"></div>
-                                        <span className="text-slate-200 font-medium whitespace-nowrap">{benefit}</span>
-                                    </div>
-                                ))}
+                        {/* Workflow Timeline */}
+                        {service.process && service.process.length > 0 && (
+                            <div>
+                                <h3 className="text-2xl font-bold text-white mb-12 flex items-center gap-3">
+                                    <Workflow size={24} className="text-blue-500" />
+                                    Execution Workflow
+                                </h3>
+                                <div className="space-y-12 relative before:absolute before:inset-0 before:left-5 before:w-px before:bg-gradient-to-b before:from-blue-500 before:via-blue-500/20 before:to-transparent">
+                                    {service.process.map((step, idx) => (
+                                        <div key={idx} className="relative pl-12 group">
+                                            <div className="absolute left-0 top-0 w-10 h-10 rounded-full bg-[#05080F] border-2 border-blue-500 flex items-center justify-center text-white font-bold text-sm z-10 group-hover:scale-110 transition-transform">
+                                                {idx + 1}
+                                            </div>
+                                            <h4 className="text-xl font-bold text-white mb-2">{step.title}</h4>
+                                            <p className="text-slate-400 leading-relaxed text-sm max-w-2xl">{step.description}</p>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        )}
+
+                        {/* Deliverables Grid */}
+                        {service.keyDeliverables && service.keyDeliverables.length > 0 && (
+                            <div>
+                                <h3 className="text-2xl font-bold text-white mb-10 flex items-center gap-3">
+                                    <PackageCheck size={24} className="text-emerald-400" />
+                                    The Final Deliverables
+                                </h3>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                    {service.keyDeliverables.map((item, idx) => (
+                                        <div key={idx} className="p-5 rounded-2xl bg-[#0B0F19] border border-white/5 text-center group hover:bg-emerald-500/5 hover:border-emerald-500/30 transition-all">
+                                            <FileText size={24} className="mx-auto text-emerald-400 mb-3 group-hover:scale-110 transition-transform" />
+                                            <span className="text-[11px] font-bold text-slate-300 block leading-snug">{item}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Software Stack */}
+                        {service.software && service.software.length > 0 && (
+                            <div>
+                                <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                                    <Monitor size={20} className="text-blue-400" />
+                                    Technology Stack
+                                </h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {service.software.map((item, idx) => (
+                                        <span key={idx} className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300 font-medium">
+                                            {item}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* FAQs Accordion */}
+                        {service.faqs && service.faqs.length > 0 && (
+                            <div>
+                                <h3 className="text-2xl font-bold text-white mb-10 flex items-center gap-3">
+                                    <HelpCircle size={24} className="text-orange-400" />
+                                    Frequently Asked Questions
+                                </h3>
+                                <div className="space-y-4">
+                                    {service.faqs.map((faq, idx) => (
+                                        <details key={idx} className="group overflow-hidden rounded-2xl border border-white/5 bg-white/[0.01]">
+                                            <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-white/[0.03]">
+                                                <span className="font-bold text-slate-200">{faq.question}</span>
+                                                <ChevronDown size={20} className="text-slate-500 group-open:rotate-180 transition-transform" />
+                                            </summary>
+                                            <div className="px-6 pb-6 text-slate-400 text-sm leading-relaxed border-t border-white/5 pt-4 bg-white/[0.005]">
+                                                {faq.answer}
+                                            </div>
+                                        </details>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                     </div>
 
                     {/* --- RIGHT SIDEBAR (Sticky) --- */}
-                    <div className="lg:col-span-1">
-                        <div className="sticky top-24 space-y-6">
+                    <div className="lg:col-span-4">
+                        <div className="sticky top-24 space-y-8">
+
+                            {/* Service Score Card (Benefits) */}
+                            <div className="bg-gradient-to-br from-[#0B0F19] to-[#05080F] border border-blue-500/20 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-32 bg-blue-500/5 blur-[100px] rounded-full"></div>
+                                <h3 className="text-lg font-bold text-white mb-8 flex items-center gap-2 relative z-10">
+                                    <TrendingUp size={20} className="text-blue-400" />
+                                    Business Impact
+                                </h3>
+                                <div className="space-y-6 relative z-10">
+                                    {displayBenefits.map((benefit: string, index: number) => (
+                                        <div key={index} className="space-y-2">
+                                            <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-slate-500">
+                                                <span>{benefit}</span>
+                                                <span className="text-blue-400">Guaranteed</span>
+                                            </div>
+                                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                                <div className="h-full bg-blue-500 rounded-full" style={{ width: `${85 + index * 5}%` }}></div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
 
                             {/* CTA Card */}
-                            <div className="bg-[#0B0F19] border border-white/10 rounded-3xl p-8 shadow-2xl">
-                                <h3 className="text-xl font-bold text-white mb-2">Need a Quote?</h3>
-                                <p className="text-slate-400 text-sm mb-6">Get a tailored proposal for your specific project requirements.</p>
-
-                                <div className="space-y-3">
-                                    <Link href="/contact" className="flex items-center justify-center gap-2 w-full py-3.5 bg-white text-black font-bold rounded-xl hover:bg-slate-200 transition-colors">
-                                        Get Started <ArrowRight size={18} />
+                            <div className="bg-blue-600 rounded-[2.5rem] p-8 text-center space-y-6">
+                                <h3 className="text-2xl font-bold text-white">Start Your BIM Journey</h3>
+                                <p className="text-blue-100/70 text-sm">Empower your project with industry-leading BIM precision and data extraction.</p>
+                                <div className="space-y-4">
+                                    <Link href="/contact" className="flex items-center justify-center gap-2 w-full py-4 bg-white text-blue-600 font-bold rounded-2xl hover:bg-slate-100 transition-colors shadow-xl">
+                                        Request A Consultation <ArrowRight size={18} />
                                     </Link>
-                                    <Link href="/contact" className="flex items-center justify-center gap-2 w-full py-3.5 bg-white/5 text-white font-bold rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
-                                        <FileText size={18} /> Download Brochure
-                                    </Link>
+                                    
                                 </div>
                             </div>
 
                             {/* Contact Info Widget */}
                             <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-6">
-                                <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Quick Contact</h4>
+                                <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Support Channels</h4>
                                 <ul className="space-y-4">
                                     <li>
                                         <a href="tel:+916294796582" className="flex items-center gap-3 text-slate-300 hover:text-blue-400 transition-colors">
-                                            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
-                                                <Phone size={16} />
+                                            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                                                <Phone size={18} />
                                             </div>
                                             +91 629 479 6582
                                         </a>
                                     </li>
                                     <li>
                                         <a href="mailto:info@tbesglobal.com" className="flex items-center gap-3 text-slate-300 hover:text-blue-400 transition-colors">
-                                            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
-                                                <Mail size={16} />
+                                            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                                                <Mail size={18} />
                                             </div>
                                             info@tbesglobal.com
                                         </a>
@@ -191,9 +282,9 @@ export default async function ServiceDetailPage({
         ========================================= */}
             <div className="border-t border-white/5 py-12 bg-[#020408]">
                 <div className="max-w-7xl mx-auto px-4 text-center">
-                    <p className="text-slate-500 mb-6">Not looking for {service.title}?</p>
-                    <Link href="/services" className="text-white font-bold underline decoration-blue-500 underline-offset-4 hover:text-blue-400 transition-colors">
-                        Explore other services
+                    <p className="text-slate-500 mb-6">Need global scale? Explore our other technical solutions.</p>
+                    <Link href="/services" className="px-8 py-3 rounded-full border border-white/10 text-white font-bold hover:bg-white hover:text-black transition-all">
+                        All Services
                     </Link>
                 </div>
             </div>

@@ -11,6 +11,20 @@ const serviceSchema = new Schema(
         image: { type: String, required: false },
         color: { type: String, default: 'blue' }, // For UI theming
         outcome: { type: String, default: 'Enhanced Efficiency' }, // For Homepage
+
+        // Advanced Fields
+        benefits: { type: [String], default: [] },
+        features: { type: [String], default: [] },
+        process: [{
+            title: { type: String, required: true },
+            description: { type: String, required: true }
+        }],
+        keyDeliverables: { type: [String], default: [] },
+        faqs: [{
+            question: { type: String, required: true },
+            answer: { type: String, required: true }
+        }],
+
         order: { type: Number, default: 0 },
         active: { type: Boolean, default: true },
     },

@@ -17,6 +17,12 @@ interface Service {
     outcome: string;
     order: number;
     active: boolean;
+    // New Fields
+    benefits: string[];
+    features: string[];
+    process: { title: string; description: string }[];
+    keyDeliverables: string[];
+    faqs: { question: string; answer: string }[];
 }
 
 const COLORS = ['blue', 'indigo', 'orange', 'yellow', 'cyan', 'red', 'emerald', 'slate', 'purple', 'pink', 'teal', 'zinc'];
@@ -36,6 +42,11 @@ export default function AdminServiceForm({ serviceId }: { serviceId?: string }) 
         outcome: 'Enhanced Efficiency',
         order: 0,
         active: true,
+        benefits: [],
+        features: [],
+        process: [],
+        keyDeliverables: [],
+        faqs: [],
     });
 
     // Fetch if editing
@@ -85,7 +96,7 @@ export default function AdminServiceForm({ serviceId }: { serviceId?: string }) 
     };
 
     const handleArrayChange = (
-        field: 'details' | 'software',
+        field: 'details' | 'software' | 'benefits' | 'features' | 'keyDeliverables',
         index: number,
         value: string
     ) => {
@@ -94,11 +105,36 @@ export default function AdminServiceForm({ serviceId }: { serviceId?: string }) 
         setForm({ ...form, [field]: newArray });
     };
 
-    const addArrayItem = (field: 'details' | 'software') => {
+    const addArrayItem = (field: 'details' | 'software' | 'benefits' | 'features' | 'keyDeliverables') => {
         setForm({ ...form, [field]: [...form[field], ''] });
     };
 
-    const removeArrayItem = (field: 'details' | 'software', index: number) => {
+    const removeArrayItem = (field: 'details' | 'software' | 'benefits' | 'features' | 'keyDeliverables', index: number) => {
+        const newArray = [...form[field]];
+        newArray.splice(index, 1);
+        setForm({ ...form, [field]: newArray });
+    };
+
+    // Complex Array Handlers (Process & FAQs)
+    const handleComplexArrayChange = (
+        field: 'process' | 'faqs',
+        index: number,
+        subField: string,
+        value: string
+    ) => {
+        const newArray = [...form[field]] as any[];
+        newArray[index] = { ...newArray[index], [subField]: value };
+        setForm({ ...form, [field]: newArray });
+    };
+
+    const addComplexItem = (field: 'process' | 'faqs') => {
+        const newItem = field === 'process'
+            ? { title: '', description: '' }
+            : { question: '', answer: '' };
+        setForm({ ...form, [field]: [...form[field], newItem] as any });
+    };
+
+    const removeComplexItem = (field: 'process' | 'faqs', index: number) => {
         const newArray = [...form[field]];
         newArray.splice(index, 1);
         setForm({ ...form, [field]: newArray });
@@ -217,6 +253,110 @@ export default function AdminServiceForm({ serviceId }: { serviceId?: string }) 
                 >
                     <Plus size={16} /> Add Detail
                 </button>
+            </div>
+
+            {/* Benefits */}
+            <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Benefits (The 'Why')</label>
+                {form.benefits?.map((item, idx) => (
+                    <div key={idx} className="flex gap-2 mb-2">
+                        <input
+                            type="text"
+                            value={item}
+                            onChange={(e) => handleArrayChange('benefits', idx, e.target.value)}
+                            className="flex-1 px-4 py-2 rounded-lg border border-gray-200"
+                            placeholder="e.g. 100% Clash Discovery"
+                        />
+                        <button type="button" onClick={() => removeArrayItem('benefits', idx)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><X size={20} /></button>
+                    </div>
+                ))}
+                <button type="button" onClick={() => addArrayItem('benefits')} className="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"><Plus size={16} /> Add Benefit</button>
+            </div>
+
+            {/* Features */}
+            <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Technical Features</label>
+                {form.features?.map((item, idx) => (
+                    <div key={idx} className="flex gap-2 mb-2">
+                        <input
+                            type="text"
+                            value={item}
+                            onChange={(e) => handleArrayChange('features', idx, e.target.value)}
+                            className="flex-1 px-4 py-2 rounded-lg border border-gray-200"
+                            placeholder="e.g. LOD 500 Modeling"
+                        />
+                        <button type="button" onClick={() => removeArrayItem('features', idx)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><X size={20} /></button>
+                    </div>
+                ))}
+                <button type="button" onClick={() => addArrayItem('features')} className="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"><Plus size={16} /> Add Feature</button>
+            </div>
+
+            {/* Deliverables */}
+            <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Key Deliverables</label>
+                {form.keyDeliverables?.map((item, idx) => (
+                    <div key={idx} className="flex gap-2 mb-2">
+                        <input
+                            type="text"
+                            value={item}
+                            onChange={(e) => handleArrayChange('keyDeliverables', idx, e.target.value)}
+                            className="flex-1 px-4 py-2 rounded-lg border border-gray-200"
+                            placeholder="e.g. Revit Central File (.rvt)"
+                        />
+                        <button type="button" onClick={() => removeArrayItem('keyDeliverables', idx)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><X size={20} /></button>
+                    </div>
+                ))}
+                <button type="button" onClick={() => addArrayItem('keyDeliverables')} className="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"><Plus size={16} /> Add Deliverable</button>
+            </div>
+
+            {/* Process Steps */}
+            <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Process / Workflow Steps</label>
+                {form.process?.map((item, idx) => (
+                    <div key={idx} className="space-y-2 p-4 bg-gray-50 rounded-xl mb-4 border border-gray-100 relative group">
+                        <button type="button" onClick={() => removeComplexItem('process', idx)} className="absolute top-2 right-2 p-1 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"><X size={16} /></button>
+                        <input
+                            type="text"
+                            value={item.title}
+                            onChange={(e) => handleComplexArrayChange('process', idx, 'title', e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-gray-200 font-bold text-sm"
+                            placeholder="Step Title (e.g. Data Collection)"
+                        />
+                        <textarea
+                            value={item.description}
+                            onChange={(e) => handleComplexArrayChange('process', idx, 'description', e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                            placeholder="Step description..."
+                            rows={2}
+                        />
+                    </div>
+                ))}
+                <button type="button" onClick={() => addComplexItem('process')} className="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"><Plus size={16} /> Add Process Step</button>
+            </div>
+
+            {/* FAQs */}
+            <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">FAQs</label>
+                {form.faqs?.map((item, idx) => (
+                    <div key={idx} className="space-y-2 p-4 bg-gray-50 rounded-xl mb-4 border border-gray-100 relative group">
+                        <button type="button" onClick={() => removeComplexItem('faqs', idx)} className="absolute top-2 right-2 p-1 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"><X size={16} /></button>
+                        <input
+                            type="text"
+                            value={item.question}
+                            onChange={(e) => handleComplexArrayChange('faqs', idx, 'question', e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-gray-200 font-bold text-sm"
+                            placeholder="Question"
+                        />
+                        <textarea
+                            value={item.answer}
+                            onChange={(e) => handleComplexArrayChange('faqs', idx, 'answer', e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                            placeholder="Answer"
+                            rows={2}
+                        />
+                    </div>
+                ))}
+                <button type="button" onClick={() => addComplexItem('faqs')} className="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"><Plus size={16} /> Add FAQ</button>
             </div>
 
             {/* Dynamic Arrays: Software */}
