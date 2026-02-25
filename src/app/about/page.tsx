@@ -102,7 +102,7 @@ const AboutPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
              {/* Doha Metro */}
              <div className="group relative rounded-3xl overflow-hidden aspect-video lg:aspect-[16/9]">
-                <img src="/doha-metro.PNG" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60" alt="Doha Metro"/>
+                <img src="/doha-metro.png" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60" alt="Doha Metro"/>
                 <div className="absolute inset-0 bg-gradient-to-t from-[#05080F] via-transparent to-transparent"></div>
                 <div className="absolute bottom-8 left-8">
                    <h4 className="text-2xl font-bold mb-2">Doha Metro</h4>
