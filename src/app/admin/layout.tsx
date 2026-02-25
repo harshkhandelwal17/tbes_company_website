@@ -1,12 +1,12 @@
 'use client';
 
 import Link from "next/link";
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Briefcase, FolderKanban, MessageSquare,
   FileText, LogOut, Menu, X, Search,
-  ChevronRight, ShieldCheck,Layers
+  ChevronRight, ShieldCheck, Layers
 } from 'lucide-react';
 
 export default function AdminLayout({
@@ -15,7 +15,37 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchResults, setShowSearchResults] = useState(false);
+
+  const allNavItems = [
+    { name: 'Dashboard', href: '/admin' },
+    { name: 'Jobs & Career', href: '/admin/career' },
+    { name: 'Services', href: '/admin/services' },
+    { name: 'Projects', href: '/admin/projects' },
+    { name: 'Inquiries', href: '/admin/contacts' },
+    { name: 'Applications', href: '/admin/applications' },
+  ];
+
+  const searchResults = searchQuery.trim()
+    ? allNavItems.filter(item =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    : [];
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchResults.length > 0) {
+      router.push(searchResults[0].href);
+      setSearchQuery('');
+      setShowSearchResults(false);
+    }
+    if (e.key === 'Escape') {
+      setSearchQuery('');
+      setShowSearchResults(false);
+    }
+  };
 
   // Close sidebar on mobile route change
   useEffect(() => {
@@ -96,8 +126,8 @@ export default function AdminLayout({
                       key={item.name}
                       href={item.href}
                       className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${isActive
-                          ? 'bg-blue-600/10 text-blue-400'
-                          : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.03]'
+                        ? 'bg-blue-600/10 text-blue-400'
+                        : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.03]'
                         }`}
                     >
                       {/* Active Left Border Accent */}
@@ -167,12 +197,32 @@ export default function AdminLayout({
           <div className="flex items-center gap-4">
             {/* Search */}
             <div className="hidden md:flex items-center relative group">
-              <Search size={16} className="absolute left-3 text-zinc-500 group-focus-within:text-blue-400 transition-colors" />
+              <Search size={16} className="absolute left-3 text-zinc-500 group-focus-within:text-blue-400 transition-colors z-10" />
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder="Search pages..."
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setShowSearchResults(true); }}
+                onFocus={() => setShowSearchResults(true)}
+                onBlur={() => setTimeout(() => setShowSearchResults(false), 150)}
+                onKeyDown={handleSearchKeyDown}
                 className="w-64 bg-black/20 border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm text-zinc-300 placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
               />
+              {/* Search Dropdown */}
+              {showSearchResults && searchResults.length > 0 && (
+                <div className="absolute top-full left-0 mt-2 w-64 bg-[#09090b] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
+                  {searchResults.map((item) => (
+                    <button
+                      key={item.href}
+                      onMouseDown={() => { router.push(item.href); setSearchQuery(''); setShowSearchResults(false); }}
+                      className="w-full text-left px-4 py-3 text-sm text-zinc-300 hover:bg-white/5 hover:text-white flex items-center gap-3 transition-colors"
+                    >
+                      <ChevronRight size={14} className="text-blue-500" />
+                      {item.name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </header>

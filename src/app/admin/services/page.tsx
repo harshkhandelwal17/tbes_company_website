@@ -57,13 +57,18 @@ export default function AdminServicesPage() {
     keyDeliverables: [''], faqs: [{ question: '', answer: '' }],
   });
 
+  // Image Upload States
+  const [imageUploadProgress, setImageUploadProgress] = useState(0);
+  const [isImageUploading, setIsImageUploading] = useState(false);
+  const [imageUploadError, setImageUploadError] = useState('');
+
   useEffect(() => {
     fetchServices();
   }, []);
 
   const fetchServices = async () => {
     try {
-      const res = await fetch('/api/services');
+      const res = await fetch('/api/services?all=true');
       const data = await res.json();
       if (Array.isArray(data)) {
         setServices(data.sort((a, b) => a.order - b.order));
@@ -112,8 +117,64 @@ export default function AdminServicesPage() {
     setIsFormOpen(true);
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImageUploadError('');
+    setImageUploadProgress(0);
+    setIsImageUploading(true);
+
+    const uploadFormData = new FormData();
+    uploadFormData.append('file', file);
+    uploadFormData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'tbes-projects');
+
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dcha7gy9o';
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener('progress', (event) => {
+      if (event.lengthComputable) {
+        const percent = Math.round((event.loaded / event.total) * 100);
+        setImageUploadProgress(percent);
+      }
+    });
+
+    xhr.addEventListener('load', () => {
+      setIsImageUploading(false);
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          if (response.secure_url) {
+            setForm(prev => ({ ...prev, image: response.secure_url }));
+            setImageUploadProgress(100);
+          } else {
+            setImageUploadError('Upload failed: No URL returned');
+          }
+        } catch {
+          setImageUploadError('Invalid response from Cloudinary');
+        }
+      } else {
+        setImageUploadError(`Error ${xhr.status} — please check settings`);
+      }
+    });
+
+    xhr.addEventListener('error', () => {
+      setIsImageUploading(false);
+      setImageUploadError('Network error — please check your connection');
+    });
+
+    xhr.open('POST', uploadUrl);
+    xhr.send(uploadFormData);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isImageUploading) {
+      alert('Photo upload ho rahi hai, please wait!');
+      return;
+    }
     setIsSubmitting(true);
 
     try {
@@ -125,13 +186,13 @@ export default function AdminServicesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
-          details: form.details.filter(d => d.trim() !== ''),
-          software: form.software.filter(s => s.trim() !== ''),
-          benefits: form.benefits.filter(b => b.trim() !== ''),
-          features: form.features.filter(f => f.trim() !== ''),
-          keyDeliverables: form.keyDeliverables.filter(k => k.trim() !== ''),
-          process: form.process.filter(p => p.title.trim() !== '' && p.description.trim() !== ''),
-          faqs: form.faqs.filter(f => f.question.trim() !== '' && f.answer.trim() !== ''),
+          details: (form.details || []).filter(d => d.trim() !== ''),
+          software: (form.software || []).filter(s => s.trim() !== ''),
+          benefits: (form.benefits || []).filter(b => b.trim() !== ''),
+          features: (form.features || []).filter(f => f.trim() !== ''),
+          keyDeliverables: (form.keyDeliverables || []).filter(k => k.trim() !== ''),
+          process: (form.process || []).filter(p => p.title.trim() !== '' && p.description.trim() !== ''),
+          faqs: (form.faqs || []).filter(f => f.question.trim() !== '' && f.answer.trim() !== ''),
         }),
       });
 
@@ -245,18 +306,30 @@ export default function AdminServicesPage() {
                   {service.active ? 'Live' : 'Draft'}
                 </div>
 
-                {/* Card Header with Color Splash */}
-                <div className="p-6 pb-0 relative overflow-hidden">
+                {/* Card Header with Color Splash & Image */}
+                <div className="relative h-44 overflow-hidden">
+                  {service.image ? (
+                    <img src={service.image} alt={service.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  ) : (
+                    <div className="w-full h-full bg-zinc-900 flex items-center justify-center">
+                      <Box size={40} className="text-zinc-800" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-[#09090b]/40 to-transparent"></div>
                   <div className="absolute top-[-50px] left-[-50px] w-32 h-32 blur-[50px] opacity-20 rounded-full" style={{ backgroundColor: themeColor }}></div>
-                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 relative z-10 shadow-lg" style={{ backgroundColor: `${themeColor}20`, color: themeColor }}>
-                    <IconComponent size={28} />
+                  <div className="absolute bottom-4 left-6 flex items-center gap-4 z-10 w-full pr-12">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg shrink-0" style={{ backgroundColor: `${themeColor}20`, color: themeColor, border: `1px solid ${themeColor}40` }}>
+                      <IconComponent size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-white leading-tight">{service.title}</h3>
+                      <p className="text-[10px] text-zinc-500 font-mono tracking-wider">/{service.slug}</p>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-1 relative z-10">{service.title}</h3>
-                  <p className="text-xs text-zinc-500 font-mono relative z-10">/{service.slug}</p>
                 </div>
 
                 {/* Card Body */}
-                <div className="p-6 flex-1 flex flex-col">
+                <div className="p-6 pt-4 flex-1 flex flex-col">
                   <p className="text-sm text-zinc-400 line-clamp-2 mb-6 flex-1">{service.description}</p>
 
                   <div className="grid grid-cols-2 gap-2 mb-6">
@@ -340,22 +413,76 @@ export default function AdminServicesPage() {
                 <div className="space-y-4">
                   <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest border-b border-white/10 pb-2">Visuals & Control</h3>
 
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-1.5 md:col-span-2">
-                      <label className="text-xs font-medium text-zinc-400">Brand Color</label>
+                      <label className="text-xs font-medium text-zinc-400">Service Banner Image</label>
+                      <div className="flex flex-col gap-4">
+                        {form.image && (
+                          <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group/img">
+                            <img src={form.image} alt="Preview" className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => setForm({ ...form, image: '' })}
+                              className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        )}
+                        <div className="relative">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            disabled={isImageUploading}
+                            className="hidden"
+                            id="image-upload"
+                          />
+                          <label
+                            htmlFor="image-upload"
+                            className={`flex flex-col items-center justify-center gap-3 w-full py-8 border-2 border-dashed rounded-2xl cursor-pointer transition-all ${isImageUploading ? 'bg-zinc-800/50 border-blue-500/50' : 'bg-zinc-900 border-white/5 hover:bg-zinc-800 hover:border-white/20'}`}
+                          >
+                            {isImageUploading ? (
+                              <>
+                                <Loader2 size={24} className="text-blue-500 animate-spin" />
+                                <div className="text-center">
+                                  <p className="text-sm font-bold text-white">Uploading... {imageUploadProgress}%</p>
+                                  <div className="w-32 h-1 bg-white/5 rounded-full mt-2 overflow-hidden mx-auto">
+                                    <div className="h-full bg-blue-500" style={{ width: `${imageUploadProgress}%` }}></div>
+                                  </div>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="p-3 bg-blue-500/10 rounded-full text-blue-400">
+                                  <LucideIcons.Upload size={20} />
+                                </div>
+                                <p className="text-sm text-zinc-400"><span className="text-blue-500 font-bold">Click to upload</span> or drag and drop</p>
+                                <p className="text-[10px] text-zinc-600 uppercase font-bold tracking-widest">SVG, PNG, JPG (MAX. 5MB)</p>
+                              </>
+                            )}
+                          </label>
+                          {imageUploadError && <p className="text-xs text-red-400 mt-2">{imageUploadError}</p>}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 md:col-span-2">
+                      <label className="text-xs font-medium text-zinc-400">Brand Color Theme</label>
                       <div className="flex flex-wrap gap-3 bg-zinc-900 p-4 rounded-xl border border-white/10">
                         {COLORS.map((c) => (
                           <button
                             key={c.name} type="button"
                             onClick={() => setForm({ ...form, color: c.name })}
-                            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${form.color === c.name ? 'ring-2 ring-white scale-110' : 'hover:scale-110 opacity-70 hover:opacity-100'}`}
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${form.color === c.name ? 'ring-2 ring-white scale-110 shadow-lg' : 'hover:scale-110 opacity-60 hover:opacity-100'}`}
                             style={{ backgroundColor: c.hex }}
                             title={c.name}
                           >
-                            {form.color === c.name && <CheckCircle2 size={14} className="text-white drop-shadow-md" />}
+                            {form.color === c.name && <CheckCircle2 size={18} className="text-white drop-shadow-md" />}
                           </button>
                         ))}
                       </div>
+                      <p className="text-[10px] text-zinc-500 mt-2 font-medium uppercase tracking-widest text-center">This color sets the theme for icon background and highlights</p>
                     </div>
 
                     <div className="space-y-1.5">

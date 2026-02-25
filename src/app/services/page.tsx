@@ -31,6 +31,22 @@ interface ServiceDocument {
   outcome?: string; // Add outcome to match
 }
 
+// Maps Tailwind color names → actual hex values (CSS vars don't exist in Tailwind at runtime)
+const colorMap: Record<string, { accent: string; muted: string }> = {
+  blue: { accent: '#3b82f6', muted: '#2563eb' },
+  indigo: { accent: '#6366f1', muted: '#4f46e5' },
+  emerald: { accent: '#10b981', muted: '#059669' },
+  purple: { accent: '#a855f7', muted: '#9333ea' },
+  orange: { accent: '#f97316', muted: '#ea580c' },
+  rose: { accent: '#f43f5e', muted: '#e11d48' },
+  cyan: { accent: '#06b6d4', muted: '#0891b2' },
+  slate: { accent: '#64748b', muted: '#475569' },
+};
+
+function getColor(color: string) {
+  return colorMap[color] ?? colorMap['blue'];
+}
+
 export default async function ServicesPage() {
   const services = await getServices() as ServiceDocument[];
 
@@ -66,8 +82,8 @@ export default async function ServicesPage() {
 
           {services.map((service, index) => {
             const isEven = index % 2 === 0;
-            // Use safe color fallback
             const color = service.color || 'blue';
+            const clr = getColor(color);
 
             return (
               <div
@@ -98,15 +114,15 @@ export default async function ServicesPage() {
                   {/* Decorative Blob */}
                   <div
                     className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] blur-[80px] rounded-full opacity-5"
-                    style={{ backgroundColor: `var(--color-${color}-500, ${color})` }}
+                    style={{ backgroundColor: clr.accent }}
                   ></div>
                 </div>
 
                 {/* Content Side */}
                 <div className="w-full lg:w-1/2 space-y-8">
                   <div className="space-y-4">
-                    <div className={`font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2`} style={{ color: `var(--color-${color}-600, ${color})` }}>
-                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: `var(--color-${color}-500, ${color})` }}></span>
+                    <div className={`font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2`} style={{ color: clr.muted }}>
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: clr.accent }}></span>
                       Service {index < 9 ? `0${index + 1}` : index + 1}
                     </div>
                     <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 leading-tight">
@@ -121,7 +137,7 @@ export default async function ServicesPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {service.details.map((detail, idx) => (
                       <div key={idx} className="flex items-center gap-3 text-slate-700 font-medium">
-                        <CheckCircle2 size={18} className="flex-shrink-0" style={{ color: `var(--color-${color}-500, ${color})` }} />
+                        <CheckCircle2 size={18} className="flex-shrink-0" style={{ color: clr.accent }} />
                         <span className="text-sm">{detail}</span>
                       </div>
                     ))}

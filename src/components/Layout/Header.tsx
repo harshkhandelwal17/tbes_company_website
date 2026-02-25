@@ -59,20 +59,19 @@ const Header = () => {
 
       {/* 2. MAIN HEADER */}
       <header
-        className={`sticky top-0 z-50 w-full transition-all duration-300 ${
-          scrolled
-            ? 'bg-white/95 backdrop-blur-xl shadow-lg py-2 border-b border-slate-100'
-            : 'bg-white py-4 border-b border-transparent'
-        }`}
+        className={`sticky top-0 z-50 w-full transition-all duration-300 ${scrolled
+          ? 'bg-white shadow-lg shadow-slate-200/80 py-2 border-b border-slate-100'
+          : 'bg-white py-3 border-b border-slate-100'
+          }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
-            
+
             {/* Logo */}
             <Link href="/" onClick={() => setIsMenuOpen(false)} className="flex-shrink-0 z-50 relative">
-               <div className={`relative transition-all duration-300 ${scrolled ? 'h-10' : 'h-12'} w-auto`}>
-                 <Image
-                  src="/logo.png" 
+              <div className={`relative transition-all duration-300 ${scrolled ? 'h-12' : 'h-16'} w-auto`}>
+                <Image
+                  src="/logo.png"
                   alt="TBES Global"
                   width={788}
                   height={485}
@@ -88,15 +87,13 @@ const Header = () => {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`group relative text-sm font-semibold tracking-wide transition-colors ${
-                    isActive(item.href) ? 'text-blue-700' : 'text-slate-600 hover:text-slate-900'
-                  }`}
+                  className={`group relative text-sm font-semibold tracking-wide transition-colors ${isActive(item.href) ? 'text-blue-700' : 'text-slate-600 hover:text-slate-900'
+                    }`}
                 >
                   {item.name}
                   {/* Animated Underline */}
-                  <span className={`absolute -bottom-1 left-0 h-[2px] bg-blue-600 transition-all duration-300 ease-out ${
-                     isActive(item.href) ? 'w-full' : 'w-0 group-hover:w-full'
-                  }`}></span>
+                  <span className={`absolute -bottom-1 left-0 h-[2px] bg-blue-600 transition-all duration-300 ease-out ${isActive(item.href) ? 'w-full' : 'w-0 group-hover:w-full'
+                    }`}></span>
                 </Link>
               ))}
 
@@ -123,18 +120,16 @@ const Header = () => {
 
       {/* 3. MOBILE MENU (Slide-over Drawer) */}
       {/* Backdrop */}
-      <div 
-        className={`fixed inset-0 z-[60] bg-slate-900/50 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
-          isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+      <div
+        className={`fixed inset-0 z-[60] bg-slate-900/50 backdrop-blur-sm transition-opacity duration-300 md:hidden ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
         onClick={() => setIsMenuOpen(false)}
       />
 
       {/* Drawer Panel */}
       <div
-        className={`fixed inset-y-0 right-0 z-[70] w-full max-w-[300px] bg-white shadow-2xl transform transition-transform duration-300 ease-out md:hidden ${
-          isMenuOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className={`fixed inset-y-0 right-0 z-[70] w-full max-w-[300px] bg-white shadow-2xl transform transition-transform duration-300 ease-out md:hidden ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
       >
         <div className="flex flex-col h-full">
           {/* Drawer Header */}
@@ -156,11 +151,10 @@ const Header = () => {
                   key={item.name}
                   href={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`flex items-center justify-between px-4 py-3.5 rounded-lg text-base font-medium transition-all ${
-                    isActive(item.href)
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`}
+                  className={`flex items-center justify-between px-4 py-3.5 rounded-lg text-base font-medium transition-all ${isActive(item.href)
+                    ? 'bg-blue-50 text-blue-700'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                    }`}
                 >
                   {item.name}
                   {isActive(item.href) && <ChevronRight size={16} />}
@@ -171,23 +165,23 @@ const Header = () => {
 
           {/* Drawer Footer / CTA */}
           <div className="p-5 border-t border-gray-100 bg-gray-50">
-             <Link
-                href="/contact"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex w-full justify-center items-center gap-2 bg-blue-700 text-white px-5 py-3.5 rounded-xl text-base font-semibold shadow-lg hover:bg-blue-800 transition-colors"
-              >
-                Get a Quote <ChevronRight size={18} />
-              </Link>
-             
-             {/* Mobile Utility Info */}
-             <div className="mt-6 space-y-3 text-center">
-                <a href="tel:+919876543210" className="block text-sm text-slate-500 hover:text-blue-700 font-medium">
-                  +91 6294796582
-                </a>
-                <a href="mailto:info@tbesglobal.com" className="block text-sm text-slate-500 hover:text-blue-700">
-                  info@tbesglobal.com
-                </a>
-             </div>
+            <Link
+              href="/contact"
+              onClick={() => setIsMenuOpen(false)}
+              className="flex w-full justify-center items-center gap-2 bg-blue-700 text-white px-5 py-3.5 rounded-xl text-base font-semibold shadow-lg hover:bg-blue-800 transition-colors"
+            >
+              Get a Quote <ChevronRight size={18} />
+            </Link>
+
+            {/* Mobile Utility Info */}
+            <div className="mt-6 space-y-3 text-center">
+              <a href="tel:+919876543210" className="block text-sm text-slate-500 hover:text-blue-700 font-medium">
+                +91 6294796582
+              </a>
+              <a href="mailto:info@tbesglobal.com" className="block text-sm text-slate-500 hover:text-blue-700">
+                info@tbesglobal.com
+              </a>
+            </div>
           </div>
         </div>
       </div>

@@ -58,6 +58,19 @@ export default async function ServiceDetailPage({
     const displayBenefits = service.benefits && service.benefits.length > 0 ? service.benefits : benefits;
     const color = service.color || 'blue';
 
+    // Maps Tailwind color names → actual hex values (CSS vars don't exist in Tailwind at runtime)
+    const colorMap: Record<string, { accent: string; gradStart: string; gradEnd: string }> = {
+        blue: { accent: '#3b82f6', gradStart: '#2563eb', gradEnd: '#1e3a8a' },
+        indigo: { accent: '#6366f1', gradStart: '#4f46e5', gradEnd: '#312e81' },
+        emerald: { accent: '#10b981', gradStart: '#059669', gradEnd: '#064e3b' },
+        purple: { accent: '#a855f7', gradStart: '#9333ea', gradEnd: '#581c87' },
+        orange: { accent: '#f97316', gradStart: '#ea580c', gradEnd: '#7c2d12' },
+        rose: { accent: '#f43f5e', gradStart: '#e11d48', gradEnd: '#881337' },
+        cyan: { accent: '#06b6d4', gradStart: '#0891b2', gradEnd: '#164e63' },
+        slate: { accent: '#64748b', gradStart: '#475569', gradEnd: '#1e293b' },
+    };
+    const clr = colorMap[color] ?? colorMap['blue'];
+
     return (
         <div className="min-h-screen bg-[#05080F] text-white font-sans selection:bg-blue-500/30">
 
@@ -67,6 +80,15 @@ export default async function ServiceDetailPage({
             <section className="relative pt-4 pb-20 lg:pt-4 lg:pb-32 overflow-hidden border-b border-white/5">
                 {/* Background Grid & Glow */}
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-[0.05]"></div>
+
+                {/* Service Image Background */}
+                {service.image && (
+                    <div className="absolute inset-0 z-0">
+                        <img src={service.image} alt="" className="w-full h-full object-cover opacity-20" />
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#05080F]/80 via-[#05080F] to-[#05080F]"></div>
+                    </div>
+                )}
+
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 blur-[100px] rounded-full translate-x-1/3 -translate-y-1/3"></div>
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -80,14 +102,14 @@ export default async function ServiceDetailPage({
                     <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
                         <div
                             className="w-20 h-20 lg:w-24 lg:h-24 rounded-3xl flex items-center justify-center shadow-[0_0_40px_rgba(37,99,235,0.3)] border border-blue-400/20"
-                            style={{ background: `linear-gradient(to bottom right, var(--color-${color}-600, ${color}), var(--color-${color}-800, #1e3a8a))` }}
+                            style={{ background: `linear-gradient(to bottom right, ${clr.gradStart}, ${clr.gradEnd})` }}
                         >
                             <DynamicIcon name={service.icon} size={40} className="text-white" />
                         </div>
                         <div className="space-y-2">
                             <div className="flex items-center gap-2">
                                 <span className="h-px w-8 bg-blue-500"></span>
-                                <span className="font-bold text-[10px] uppercase tracking-[0.3em]" style={{ color: `var(--color-${color}-500, ${color})` }}>Advanced BIM Strategy</span>
+                                <span className="font-bold text-[10px] uppercase tracking-[0.3em]" style={{ color: clr.accent }}>Advanced BIM Strategy</span>
                             </div>
                             <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight leading-tight">{service.title}</h1>
                         </div>
@@ -244,7 +266,7 @@ export default async function ServiceDetailPage({
                                     <Link href="/contact" className="flex items-center justify-center gap-2 w-full py-4 bg-white text-blue-600 font-bold rounded-2xl hover:bg-slate-100 transition-colors shadow-xl">
                                         Request A Consultation <ArrowRight size={18} />
                                     </Link>
-                                    
+
                                 </div>
                             </div>
 

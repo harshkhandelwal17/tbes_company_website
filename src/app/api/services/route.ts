@@ -2,10 +2,14 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Service from '@/models/Service';
 
-export async function GET() {
+export async function GET(req: Request) {
     try {
         await connectDB();
-        const services = await Service.find({ active: true }).sort({ order: 1 });
+        const { searchParams } = new URL(req.url);
+        const showAll = searchParams.get('all') === 'true';
+
+        const query = showAll ? {} : { active: true };
+        const services = await Service.find(query).sort({ order: 1 });
         return NextResponse.json(services);
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });

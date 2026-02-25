@@ -15,19 +15,31 @@ const LearningPage = () => {
       name: "Debaprasad Santra",
       position: "BIM Engineer, Sudlows Consulting (Dubai)",
       content: "Arup Sir's teaching is exceptional. He thoroughly explains every topic, ensuring clarity and mastery. This personalized attention gave me the confidence to work internationally.",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&h=200&auto=format&fit=crop"
+      image: "/debaprasad-santra.jpeg"
     },
     {
       name: "Kunal Das",
       position: "MEP Engineer, ITD Cementation",
       content: "TBES provided comprehensive practical learning. The instructors are knowledgeable, and the blend of theory with live project exposure is what sets them apart.",
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&h=200&auto=format&fit=crop"
+      image: "/kunal-das.jpeg"
     },
     {
       name: "Kousik Ghosh",
       position: "BIM Professional",
       content: "I pursued the BIM Advanced Training. The training on AutoCAD and Revit was deeply tied to actual project workflows. I even got hired by TBES afterwards!",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=200&h=200&auto=format&fit=crop"
+      image: "/kousik-ghosh.jpeg"
+    },
+      {
+      name: "Ayan Samanta",
+      position: "junior BIM Technician at tbes global",
+      content: "Starting my training at tbes global opened the door to real MEP BIM learning and professional growth . I feel privileged to now serve as a BIM Professional and continue advancing with the guidance and support of the team",
+      image: "/ayan-samanta.png"
+    },
+    {
+      name: "Navendu Dey",
+      position: "BIM Professional",
+      content: "Beginning my career at TBES Global as an MEP BIM trainee gave me valuable hands on learning and exposure to real industry projects. i truly appreciate the guidence and support i received while growing into the role of BIM Technician",
+      image: "/navendu.jpeg"
     }
   ];
 
