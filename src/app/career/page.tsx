@@ -2,9 +2,9 @@
 
 import { CldUploadWidget } from 'next-cloudinary';
 import { useState, useEffect } from 'react';
-import { 
-  MapPin, Clock, Briefcase, Users, Award, Target, 
-  ArrowRight, Sparkles, Building2, Search, Zap, 
+import {
+  MapPin, Clock, Briefcase, Users, Award, Target,
+  ArrowRight, Sparkles, Building2, Search, Zap,
   ChevronRight, IndianRupee, Send, X, FileText, CheckCircle2, UploadCloud
 } from 'lucide-react';
 
@@ -83,16 +83,16 @@ const ApplicationModal = ({ job, onClose }: { job: Job; onClose: () => void }) =
   return (
     <div className="fixed inset-0 z-[100] flex justify-center sm:items-center bg-black/90 backdrop-blur-md p-0 sm:p-4 overflow-y-auto">
       <div className="bg-[#0B0F19] w-full max-w-2xl rounded-none sm:rounded-[2rem] border border-white/10 shadow-2xl relative flex flex-col max-h-[100vh] sm:max-h-[90vh] animate-in slide-in-from-bottom-10 duration-300">
-        
+
         {/* Header (Sticky) */}
         <div className="p-6 border-b border-white/10 flex justify-between items-start bg-[#0B0F19] sticky top-0 z-20">
           <div>
             <span className="text-blue-500 font-bold text-[10px] uppercase tracking-widest mb-1 block">Applying For</span>
             <h2 className="text-2xl font-bold text-white leading-tight">{job.title}</h2>
             <div className="flex items-center gap-3 mt-2 text-slate-400 text-xs">
-               <span className="flex items-center gap-1"><MapPin size={10}/> {job.location}</span>
-               <span className="w-1 h-1 bg-slate-600 rounded-full"></span>
-               <span className="flex items-center gap-1"><Clock size={10}/> {job.type}</span>
+              <span className="flex items-center gap-1"><MapPin size={10} /> {job.location}</span>
+              <span className="w-1 h-1 bg-slate-600 rounded-full"></span>
+              <span className="flex items-center gap-1"><Clock size={10} /> {job.type}</span>
             </div>
           </div>
           <button onClick={onClose} className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-colors">
@@ -103,82 +103,85 @@ const ApplicationModal = ({ job, onClose }: { job: Job; onClose: () => void }) =
         {/* Form Content (Scrollable) */}
         <div className="p-6 sm:p-8 overflow-y-auto custom-scrollbar">
           <form onSubmit={handleSubmit} className="space-y-6">
-            
+
             <div className="space-y-4">
-               <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-white/5 pb-2">Personal Details</h3>
-               <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                     <label className="text-xs font-medium text-slate-400">Full Name</label>
-                     <input type="text" required placeholder="John Doe" 
-                        className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:bg-white/[0.05] transition-all placeholder:text-slate-600"
-                        value={formData.fullName} onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                     />
-                  </div>
-                  <div className="space-y-1.5">
-                     <label className="text-xs font-medium text-slate-400">Phone Number</label>
-                     <input type="tel" required placeholder="+91 98765 43210" 
-                        className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:bg-white/[0.05] transition-all placeholder:text-slate-600"
-                        value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                     />
-                  </div>
-                  <div className="space-y-1.5 md:col-span-2">
-                     <label className="text-xs font-medium text-slate-400">Email Address</label>
-                     <input type="email" required placeholder="john@example.com" 
-                        className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:bg-white/[0.05] transition-all placeholder:text-slate-600"
-                        value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                     />
-                  </div>
-               </div>
+              <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider">Personal Details</h3>
+                <span className="text-[10px] text-slate-600"><span className="text-red-400">*</span> Required</span>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-slate-400">Full Name <span className="text-red-400">*</span></label>
+                  <input type="text" required placeholder="John Doe"
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:bg-white/[0.05] transition-all placeholder:text-slate-600"
+                    value={formData.fullName} onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-slate-400">Phone Number <span className="text-red-400">*</span></label>
+                  <input type="tel" required placeholder="+91 98765 43210"
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:bg-white/[0.05] transition-all placeholder:text-slate-600"
+                    value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5 md:col-span-2">
+                  <label className="text-xs font-medium text-slate-400">Email Address <span className="text-red-400">*</span></label>
+                  <input type="email" required placeholder="john@example.com"
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:bg-white/[0.05] transition-all placeholder:text-slate-600"
+                    value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="space-y-4">
-               <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-white/5 pb-2">Documents</h3>
-               
-               <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-slate-400">Resume/CV (PDF)</label>
-                  <CldUploadWidget 
-                     uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "tbes-global-uploads"}
-                     onSuccess={(result: any) => {
-                        if (result.info?.secure_url) setFormData(prev => ({ ...prev, resumeUrl: result.info.secure_url }));
-                     }}
-                     options={{ sources: ['local', 'google_drive'], clientAllowedFormats: ['pdf', 'doc', 'docx'], maxFileSize: 5000000, multiple: false }}
-                  >
-                     {({ open }) => (
-                        <div onClick={() => open()} className={`group border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${formData.resumeUrl ? 'border-green-500/30 bg-green-500/5' : 'border-white/10 hover:border-blue-500/50 hover:bg-blue-500/5'}`}>
-                           {formData.resumeUrl ? (
-                              <div className="flex flex-col items-center gap-2 text-green-400">
-                                 <div className="p-3 bg-green-500/20 rounded-full"><CheckCircle2 size={24} /></div>
-                                 <span className="font-bold text-sm">Resume Attached</span>
-                                 <span className="text-xs text-green-400/60">Ready to submit</span>
-                              </div>
-                           ) : (
-                              <div className="flex flex-col items-center gap-3 text-slate-400 group-hover:text-blue-400">
-                                 <div className="p-3 bg-white/5 rounded-full group-hover:bg-blue-500/20 transition-colors"><UploadCloud size={24} /></div>
-                                 <div>
-                                    <p className="font-bold text-sm text-white group-hover:text-blue-300">Click to Upload Resume</p>
-                                    <p className="text-xs mt-1 text-slate-500">PDF, DOCX (Max 5MB)</p>
-                                 </div>
-                              </div>
-                           )}
-                        </div>
-                     )}
-                  </CldUploadWidget>
-               </div>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-white/5 pb-2">Documents</h3>
 
-               <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-slate-400">Cover Letter (Optional)</label>
-                  <textarea rows={3} placeholder="Tell us why you're a great fit..." 
-                     className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:bg-white/[0.05] transition-all placeholder:text-slate-600 resize-none"
-                     value={formData.coverLetter} onChange={(e) => setFormData({ ...formData, coverLetter: e.target.value })}
-                  />
-               </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-slate-400">Resume/CV (PDF) <span className="text-red-400">*</span></label>
+                <CldUploadWidget
+                  uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "tbes-global-uploads"}
+                  onSuccess={(result: any) => {
+                    if (result.info?.secure_url) setFormData(prev => ({ ...prev, resumeUrl: result.info.secure_url }));
+                  }}
+                  options={{ sources: ['local', 'google_drive'], clientAllowedFormats: ['pdf', 'doc', 'docx'], maxFileSize: 5000000, multiple: false }}
+                >
+                  {({ open }) => (
+                    <div onClick={() => open()} className={`group border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${formData.resumeUrl ? 'border-green-500/30 bg-green-500/5' : 'border-white/10 hover:border-blue-500/50 hover:bg-blue-500/5'}`}>
+                      {formData.resumeUrl ? (
+                        <div className="flex flex-col items-center gap-2 text-green-400">
+                          <div className="p-3 bg-green-500/20 rounded-full"><CheckCircle2 size={24} /></div>
+                          <span className="font-bold text-sm">Resume Attached</span>
+                          <span className="text-xs text-green-400/60">Ready to submit</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-3 text-slate-400 group-hover:text-blue-400">
+                          <div className="p-3 bg-white/5 rounded-full group-hover:bg-blue-500/20 transition-colors"><UploadCloud size={24} /></div>
+                          <div>
+                            <p className="font-bold text-sm text-white group-hover:text-blue-300">Click to Upload Resume</p>
+                            <p className="text-xs mt-1 text-slate-500">PDF, DOCX (Max 5MB)</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CldUploadWidget>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-slate-400">Cover Letter (Optional)</label>
+                <textarea rows={3} placeholder="Tell us why you're a great fit..."
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:bg-white/[0.05] transition-all placeholder:text-slate-600 resize-none"
+                  value={formData.coverLetter} onChange={(e) => setFormData({ ...formData, coverLetter: e.target.value })}
+                />
+              </div>
             </div>
 
             <div className="pt-4">
-               <button type="submit" disabled={isSubmitting} className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg shadow-lg shadow-blue-900/20 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                  {isSubmitting ? <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Sending...</> : <>Submit Application <Send size={18} /></>}
-               </button>
-               {submitStatus === 'error' && <p className="text-red-400 text-xs text-center mt-3 bg-red-500/10 py-2 rounded-lg">Something went wrong. Please try again.</p>}
+              <button type="submit" disabled={isSubmitting} className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg shadow-lg shadow-blue-900/20 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                {isSubmitting ? <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Sending...</> : <>Submit Application <Send size={18} /></>}
+              </button>
+              {submitStatus === 'error' && <p className="text-red-400 text-xs text-center mt-3 bg-red-500/10 py-2 rounded-lg">Something went wrong. Please try again.</p>}
             </div>
 
           </form>
@@ -200,10 +203,10 @@ const CareerPage = () => {
         const response = await fetch('/api/jobs');
         if (response.ok) {
           const data = await response.json();
-          if (Array.isArray(data)) setJobs(data.filter((job: Job) => job.active !== false));
+          if (Array.isArray(data)) setJobs(data);
           else setJobs([]);
         }
-      } catch (error) { console.error('Error fetching jobs:', error); } 
+      } catch (error) { console.error('Error fetching jobs:', error); }
       finally { setLoading(false); }
     };
     fetchJobs();
@@ -341,10 +344,10 @@ const CareerPage = () => {
 
                   {/* Description Preview */}
                   <div className="relative mb-6">
-                     <p className="text-slate-400 text-sm line-clamp-3 leading-relaxed">
-                        {job.description}
-                     </p>
-                     <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#0B0F19] to-transparent"></div>
+                    <p className="text-slate-400 text-sm line-clamp-3 leading-relaxed">
+                      {job.description}
+                    </p>
+                    <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#0B0F19] to-transparent"></div>
                   </div>
 
                   {/* Action */}
@@ -391,7 +394,7 @@ const CareerPage = () => {
           </p>
 
           <div className="inline-flex flex-col items-center gap-4">
-            <a 
+            <a
               href="mailto:hr@tbesglobal.com"
               className="px-10 py-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white font-bold rounded-2xl transition-all flex items-center gap-4 group"
             >

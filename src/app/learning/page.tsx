@@ -3,10 +3,10 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { 
-  Users, Award, BookOpen, Target, CheckCircle2, 
-  ArrowRight, Sparkles, GraduationCap, MonitorPlay, 
-  Layers, FileText, Quote 
+import {
+  Users, Award, BookOpen, Target, CheckCircle2,
+  ArrowRight, Sparkles, GraduationCap, MonitorPlay,
+  Layers, FileText, Quote
 } from 'lucide-react';
 
 const LearningPage = () => {
@@ -29,16 +29,16 @@ const LearningPage = () => {
       content: "I pursued the BIM Advanced Training. The training on AutoCAD and Revit was deeply tied to actual project workflows. I even got hired by TBES afterwards!",
       image: "/kousik-ghosh.jpeg"
     },
-      {
+    {
       name: "Ayan Samanta",
-      position: "junior BIM Technician at tbes global",
-      content: "Starting my training at tbes global opened the door to real MEP BIM learning and professional growth . I feel privileged to now serve as a BIM Professional and continue advancing with the guidance and support of the team",
+      position: "Junior BIM Technician, TBES Global",
+      content: "Starting my training at TBES Global opened the door to real MEP BIM learning and professional growth. I feel privileged to now serve as a BIM Professional and continue advancing with the guidance and support of the team.",
       image: "/ayan-samanta.png"
     },
     {
       name: "Navendu Dey",
       position: "BIM Professional",
-      content: "Beginning my career at TBES Global as an MEP BIM trainee gave me valuable hands on learning and exposure to real industry projects. i truly appreciate the guidence and support i received while growing into the role of BIM Technician",
+      content: "Beginning my career at TBES Global as an MEP BIM trainee gave me valuable hands-on learning and exposure to real industry projects. I truly appreciate the guidance and support I received while growing into the role of BIM Technician.",
       image: "/navendu.jpeg"
     }
   ];
@@ -66,11 +66,11 @@ const LearningPage = () => {
 
   return (
     <div className="min-h-screen bg-[#05080F] text-white font-sans selection:bg-orange-500/30">
-      
+
       {/* =========================================
           1. HERO SECTION
       ========================================= */}
-      <section className="relative pb-20 pt-2 lg:pb-32 overflow-hidden border-b border-white/5">
+      <section className="relative pb-20 pt-24 lg:pt-32 lg:pb-32 overflow-hidden border-b border-white/5">
         {/* Abstract Background */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-[0.05]"></div>
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-orange-600/10 blur-[120px] rounded-full pointer-events-none"></div>
@@ -79,14 +79,14 @@ const LearningPage = () => {
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-bold uppercase tracking-widest mb-8 animate-in fade-in zoom-in duration-500">
             <Sparkles size={12} /> Transform Your Career
           </div>
-          
+
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight leading-[1.1]">
             An Art Infused <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500">Learning Experience.</span>
           </h1>
-          
+
           <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed font-light mb-10">
-            Don't just learn software. Learn how to <strong>Engineer</strong>. <br className="hidden md:block"/>
+            Don't just learn software. Learn how to <strong>Engineer</strong>. <br className="hidden md:block" />
             Join our industry-led training programs designed for the future of construction.
           </p>
 
@@ -131,36 +131,36 @@ const LearningPage = () => {
       <section className="py-20 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-            
+
             <div className="order-2 lg:order-1 relative">
-               {/* Image Container with Glow */}
-               <div className="absolute -inset-4 bg-gradient-to-r from-orange-600 to-purple-600 rounded-2xl opacity-20 blur-2xl"></div>
-               <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-                  <Image 
-                    src="/businessman-learning.jpg" 
-                    alt="Learning Environment" 
-                    width={600} 
-                    height={400} 
-                    className="w-full h-auto object-cover hover:scale-105 transition-transform duration-700"
-                  />
-                  {/* Floating Badge */}
-                  <div className="absolute bottom-6 right-6 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl flex items-center gap-3">
-                     <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white">
-                        <GraduationCap size={20} />
-                     </div>
-                     <div>
-                        <p className="text-white font-bold text-sm">Certified</p>
-                        <p className="text-slate-300 text-[10px]">Autodesk Authorized</p>
-                     </div>
+              {/* Image Container with Glow */}
+              <div className="absolute -inset-4 bg-gradient-to-r from-orange-600 to-purple-600 rounded-2xl opacity-20 blur-2xl"></div>
+              <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+                <Image
+                  src="/businessman-learning.jpg"
+                  alt="Learning Environment"
+                  width={600}
+                  height={400}
+                  className="w-full h-auto object-cover hover:scale-105 transition-transform duration-700"
+                />
+                {/* Floating Badge */}
+                <div className="absolute bottom-6 right-6 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white">
+                    <GraduationCap size={20} />
                   </div>
-               </div>
+                  <div>
+                    <p className="text-white font-bold text-sm">Certified</p>
+                    <p className="text-slate-300 text-[10px]">Autodesk Authorized</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="order-1 lg:order-2 space-y-8">
               <div>
                 <span className="text-orange-500 font-bold text-xs uppercase tracking-widest">Our Methodology</span>
                 <h2 className="text-3xl md:text-5xl font-bold text-white mt-3 mb-6">
-                  Theory Meets <br/><span className="text-slate-500">Industry Reality.</span>
+                  Theory Meets <br /><span className="text-slate-500">Industry Reality.</span>
                 </h2>
                 <p className="text-slate-400 text-lg leading-relaxed">
                   We don't believe in just teaching tool commands. Our curriculum is built around <strong>real-world project workflows</strong> used by top firms globally.
@@ -193,37 +193,37 @@ const LearningPage = () => {
       ========================================= */}
       <section className="py-20 bg-white/[0.02] border-y border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-           
-           <div className="max-w-3xl mx-auto mb-12">
-             <h2 className="text-3xl font-bold text-white mb-4">Our Holistic Training Module</h2>
-             <p className="text-slate-400">A structured path designed to take you from beginner to job-ready professional.</p>
-           </div>
 
-           {/* FIX: Constrained Container 
+          <div className="max-w-3xl mx-auto mb-12">
+            <h2 className="text-3xl font-bold text-white mb-4">Our Holistic Training Module</h2>
+            <p className="text-slate-400">A structured path designed to take you from beginner to job-ready professional.</p>
+          </div>
+
+          {/* FIX: Constrained Container 
               We use max-w-5xl to prevent image from becoming too large.
               Added padding and border to make it look like a dashboard.
            */}
-           <div className="relative max-w-5xl mx-auto bg-[#0B0F19] rounded-2xl p-2 border border-white/10 shadow-2xl">
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-500/50 to-transparent"></div>
-              
-              <div className="rounded-xl overflow-hidden bg-slate-900 relative group">
-                 {/* Image */}
-                 <Image
-                   src="/training-module.png"
-                   alt="Training Module Roadmap"
-                   width={1200}
-                   height={600}
-                   className="w-full h-auto object-contain" // object-contain keeps aspect ratio clean
-                 />
-                 
-                 {/* Optional: Hover Overlay Hint */}
-                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                    <span className="text-white font-bold bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-                       Comprehensive Syllabus
-                    </span>
-                 </div>
+          <div className="relative max-w-5xl mx-auto bg-[#0B0F19] rounded-2xl p-2 border border-white/10 shadow-2xl">
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-500/50 to-transparent"></div>
+
+            <div className="rounded-xl overflow-hidden bg-slate-900 relative group">
+              {/* Image */}
+              <Image
+                src="/training-module.png"
+                alt="Training Module Roadmap"
+                width={1200}
+                height={600}
+                className="w-full h-auto object-contain" // object-contain keeps aspect ratio clean
+              />
+
+              {/* Optional: Hover Overlay Hint */}
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                <span className="text-white font-bold bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
+                  Comprehensive Syllabus
+                </span>
               </div>
-           </div>
+            </div>
+          </div>
 
         </div>
       </section>
@@ -242,11 +242,11 @@ const LearningPage = () => {
             {courses.map((course, index) => (
               <div key={index} className="group relative bg-[#0B0F19] border border-white/5 rounded-3xl p-8 hover:border-orange-500/50 transition-all duration-300 hover:-translate-y-2">
                 <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-                   <MonitorPlay size={80} />
+                  <MonitorPlay size={80} />
                 </div>
 
                 <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                   {course.icon}
+                  {course.icon}
                 </div>
 
                 <h3 className="text-2xl font-bold text-white mb-3">{course.name}</h3>
@@ -255,16 +255,16 @@ const LearningPage = () => {
                 </p>
 
                 <div className="flex flex-wrap gap-2 mb-8">
-                   {course.tags.map((tag, i) => (
-                      <span key={i} className="text-[10px] uppercase font-bold text-slate-500 bg-white/5 px-2 py-1 rounded border border-white/5">
-                         {tag}
-                      </span>
-                   ))}
+                  {course.tags.map((tag, i) => (
+                    <span key={i} className="text-[10px] uppercase font-bold text-slate-500 bg-white/5 px-2 py-1 rounded border border-white/5">
+                      {tag}
+                    </span>
+                  ))}
                 </div>
 
-                <button className="w-full py-3 rounded-xl border border-white/10 text-white font-bold text-sm hover:bg-orange-600 hover:border-orange-600 transition-all">
-                   View Curriculum
-                </button>
+                <a href="/contact" className="w-full py-3 rounded-xl border border-white/10 text-white font-bold text-sm hover:bg-orange-600 hover:border-orange-600 transition-all flex items-center justify-center">
+                  View Curriculum
+                </a>
               </div>
             ))}
           </div>
@@ -277,27 +277,27 @@ const LearningPage = () => {
       <section className="py-20 bg-white/[0.02] border-t border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4 mb-12">
-             <div className="w-12 h-[2px] bg-orange-500"></div>
-             <h2 className="text-3xl font-bold text-white">Alumni Success Stories</h2>
+            <div className="w-12 h-[2px] bg-orange-500"></div>
+            <h2 className="text-3xl font-bold text-white">Alumni Success Stories</h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {testimonials.map((t, idx) => (
               <div key={idx} className="bg-[#0B0F19] p-8 rounded-3xl border border-white/5 relative">
                 <Quote className="absolute top-6 right-6 text-white/10" size={40} />
-                
+
                 <p className="text-slate-300 text-sm italic leading-relaxed mb-8 relative z-10">
                   "{t.content}"
                 </p>
 
                 <div className="flex items-center gap-4 pt-6 border-t border-white/5">
-                   <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/10">
-                      <Image src={t.image} alt={t.name} width={48} height={48} className="w-full h-full object-cover" />
-                   </div>
-                   <div>
-                      <h4 className="text-white font-bold text-sm">{t.name}</h4>
-                      <p className="text-orange-400 text-xs">{t.position}</p>
-                   </div>
+                  <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/10">
+                    <Image src={t.image} alt={t.name} width={48} height={48} className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <h4 className="text-white font-bold text-sm">{t.name}</h4>
+                    <p className="text-orange-400 text-xs">{t.position}</p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -309,17 +309,17 @@ const LearningPage = () => {
           7. CTA FOOTER
       ========================================= */}
       <section className="py-24 text-center">
-         <div className="max-w-4xl mx-auto px-4">
-            <h2 className="text-4xl md:text-6xl font-bold text-white mb-8">Start Your Journey Today</h2>
-            <p className="text-slate-400 mb-10 text-lg">
-               Join thousands of professionals who have advanced their careers with TBES Global.
-            </p>
-            <div className="flex justify-center gap-6">
-               <Link href="/contact" className="px-10 py-4 bg-white text-black font-bold rounded-full hover:bg-slate-200 transition-colors shadow-xl">
-                  Contact Admissions
-               </Link>
-            </div>
-         </div>
+        <div className="max-w-4xl mx-auto px-4">
+          <h2 className="text-4xl md:text-6xl font-bold text-white mb-8">Start Your Journey Today</h2>
+          <p className="text-slate-400 mb-10 text-lg">
+            Join thousands of professionals who have advanced their careers with TBES Global.
+          </p>
+          <div className="flex justify-center gap-6">
+            <Link href="/contact" className="px-10 py-4 bg-white text-black font-bold rounded-full hover:bg-slate-200 transition-colors shadow-xl">
+              Contact Admissions
+            </Link>
+          </div>
+        </div>
       </section>
 
     </div>

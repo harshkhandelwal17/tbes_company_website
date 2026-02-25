@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import { ShieldCheck, Lock, Mail, Loader2, ArrowRight } from 'lucide-react'
 
@@ -12,19 +11,26 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  const handleLogin = async (e: any) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
     try {
-      const res = await axios.post('/api/admin/login', { email, password })
-      if (res.data.success) {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+      const data = await res.json()
+      if (data.success) {
         router.push('/admin')
-        router.refresh() 
+        router.refresh()
+      } else {
+        setError(data.message || 'Access denied. Invalid credentials.')
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Access denied. Invalid credentials.')
+    } catch (err) {
+      setError('Access denied. Invalid credentials.')
     } finally {
       setLoading(false)
     }
@@ -32,39 +38,39 @@ export default function AdminLogin() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#05080F] relative overflow-hidden font-sans selection:bg-blue-500/30">
-      
+
       {/* =======================
           1. BACKGROUND EFFECTS
       ======================== */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-[0.05]"></div>
-         <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full"></div>
-         <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full"></div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-[0.05]"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full"></div>
       </div>
 
       {/* =======================
           2. LOGIN CARD
       ======================== */}
       <div className="relative z-10 w-full max-w-md p-6">
-        
+
         {/* Brand Logo / Icon */}
         <div className="flex flex-col items-center mb-8">
-           <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-2xl shadow-blue-500/20 mb-4 animate-in zoom-in duration-500">
-              <ShieldCheck size={32} />
-           </div>
-           <h1 className="text-3xl font-bold text-white tracking-tight">Admin Access</h1>
-           <p className="text-zinc-500 text-sm mt-2">Enter your credentials to continue</p>
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-2xl shadow-blue-500/20 mb-4 animate-in zoom-in duration-500">
+            <ShieldCheck size={32} />
+          </div>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Admin Access</h1>
+          <p className="text-zinc-500 text-sm mt-2">Enter your credentials to continue</p>
         </div>
 
         <div className="bg-[#09090b]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
-          
+
           <form onSubmit={handleLogin} className="space-y-6">
-            
+
             {/* Error Message */}
             {error && (
               <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-400 text-sm animate-in slide-in-from-top-2">
-                 <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></div>
-                 {error}
+                <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></div>
+                {error}
               </div>
             )}
 
@@ -122,8 +128,8 @@ export default function AdminLogin() {
 
         {/* Footer Text */}
         <p className="text-center text-xs text-zinc-600 mt-8">
-           Protected Area. Authorized Personnel Only. <br />
-           &copy; {new Date().getFullYear()} TBES Global.
+          Protected Area. Authorized Personnel Only. <br />
+          &copy; {new Date().getFullYear()} TBES Global.
         </p>
 
       </div>

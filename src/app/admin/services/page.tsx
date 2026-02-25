@@ -386,25 +386,28 @@ export default function AdminServicesPage() {
 
                 {/* --- Section 1: Basic Info --- */}
                 <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest border-b border-white/10 pb-2">Core Identity</h3>
+                  <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                    <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Core Identity</h3>
+                    <span className="text-[10px] text-zinc-600"><span className="text-red-400">*</span> Required fields</span>
+                  </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-1.5 md:col-span-2">
-                      <label className="text-xs font-medium text-zinc-400">Service Title *</label>
+                      <label className="text-xs font-medium text-zinc-400">Service Title <span className="text-red-400">*</span></label>
                       <input type="text" required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 focus:outline-none transition-all" placeholder="e.g. BIM Modeling" />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-zinc-400">URL Slug *</label>
+                      <label className="text-xs font-medium text-zinc-400">URL Slug <span className="text-red-400">*</span></label>
                       <input type="text" required value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })} className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-sm focus:border-blue-500 focus:outline-none transition-all" placeholder="bim-modeling" />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-zinc-400 flex justify-between">Icon Name <a href="https://lucide.dev/icons" target="_blank" className="text-blue-400 hover:underline">Lucide refs</a></label>
+                      <label className="text-xs font-medium text-zinc-400 flex justify-between">Icon Name <span className="text-red-400">*</span> <a href="https://lucide.dev/icons" target="_blank" className="text-blue-400 hover:underline text-[10px]">Lucide refs</a></label>
                       <input type="text" required value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 focus:outline-none transition-all" placeholder="e.g. Box, Layers, Zap" />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-zinc-400">Description *</label>
+                    <label className="text-xs font-medium text-zinc-400">Description <span className="text-red-400">*</span></label>
                     <textarea rows={3} required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 focus:outline-none transition-all resize-none" placeholder="What does this service provide..." />
                   </div>
                 </div>
@@ -415,7 +418,7 @@ export default function AdminServicesPage() {
 
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-1.5 md:col-span-2">
-                      <label className="text-xs font-medium text-zinc-400">Service Banner Image</label>
+                      <label className="text-xs font-medium text-zinc-400">Service Banner Image <span className="text-zinc-600">(Optional)</span></label>
                       <div className="flex flex-col gap-4">
                         {form.image && (
                           <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group/img">
@@ -486,7 +489,7 @@ export default function AdminServicesPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-zinc-400">Display Order</label>
+                      <label className="text-xs font-medium text-zinc-400">Display Order <span className="text-zinc-600">(Optional)</span></label>
                       <input type="number" value={form.order} onChange={(e) => setForm({ ...form, order: Number(e.target.value) })} className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 focus:outline-none transition-all" />
                     </div>
                     <div className="space-y-1.5">

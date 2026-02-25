@@ -439,16 +439,17 @@ export default function AdminProjectsPage() {
 
                 {/* Basic Info */}
                 <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest border-b border-white/10 pb-2">Basic Details</h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest border-b border-white/10 pb-2">Basic Details</h3>
+                    <span className="text-[10px] text-zinc-600"><span className="text-red-400">*</span> Required fields</span>
+                  </div>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-1.5 md:col-span-2">
-                      <label className="text-xs font-medium text-zinc-400">Project Title *</label>
-                      <input type="text" required value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 focus:outline-none transition-all" />
-                    </div>
+                      <label className="text-xs font-medium text-zinc-400">Project Title <span className="text-red-400">*</span></label>
+                      <input type="text" required value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 focus:outline-none transition-all placeholder:text-zinc-600" placeholder="e.g. Doha Metro Station BIM" /></div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-zinc-400">Location *</label>
-                      <input type="text" required value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 focus:outline-none transition-all" />
-                    </div>
+                      <label className="text-xs font-medium text-zinc-400">Location <span className="text-red-400">*</span></label>
+                      <input type="text" required value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 focus:outline-none transition-all placeholder:text-zinc-600" placeholder="e.g. Doha, Qatar" /></div>
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium text-zinc-400">Project Type</label>
                       <select value={formData.projectType} onChange={(e) => setFormData({ ...formData, projectType: e.target.value })} className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 focus:outline-none transition-all">
@@ -481,8 +482,8 @@ export default function AdminProjectsPage() {
                       <input type="text" value={formData.sow} onChange={(e) => setFormData({ ...formData, sow: e.target.value })} className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 focus:outline-none transition-all" placeholder="e.g. BIM Modeling & Coordination" />
                     </div>
                     <div className="space-y-1.5 md:col-span-2">
-                      <label className="text-xs font-medium text-zinc-400">Description</label>
-                      <textarea rows={3} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 focus:outline-none transition-all resize-none" />
+                      <label className="text-xs font-medium text-zinc-400">Description <span className="text-red-400">*</span></label>
+                      <textarea rows={3} required value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 focus:outline-none transition-all resize-none placeholder:text-zinc-600" placeholder="Brief project overview and key deliverables..." />
                     </div>
                   </div>
                 </div>

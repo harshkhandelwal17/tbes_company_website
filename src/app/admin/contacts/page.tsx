@@ -160,13 +160,13 @@ export default function ContactsPage() {
 
         {/* Filter Tabs */}
         <div className="flex bg-[#09090b] p-1 rounded-xl border border-white/[0.08] h-12 items-center">
-          {['All', 'New', 'Replied'].map((filter) => (
+          {['All', 'New', 'Read', 'Replied'].map((filter) => (
             <button
               key={filter}
               onClick={() => setStatusFilter(filter)}
               className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-xs font-bold transition-all h-full flex items-center justify-center ${statusFilter === filter
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'text-zinc-500 hover:text-white hover:bg-white/5'
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'text-zinc-500 hover:text-white hover:bg-white/5'
                 }`}
             >
               {filter}
@@ -196,8 +196,8 @@ export default function ContactsPage() {
               key={contact._id}
               onClick={() => openDrawer(contact)}
               className={`group relative bg-[#09090b] border rounded-2xl p-5 cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${contact.status === 'New'
-                  ? 'border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.1)]'
-                  : 'border-white/[0.08] hover:border-white/[0.2]'
+                ? 'border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.1)]'
+                : 'border-white/[0.08] hover:border-white/[0.2]'
                 }`}
             >
               {/* Status Dot */}
@@ -257,8 +257,8 @@ export default function ContactsPage() {
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${selectedContact.status === 'New' ? 'border-blue-500/30 text-blue-400 bg-blue-500/10' :
-                      selectedContact.status === 'Replied' ? 'border-green-500/30 text-green-400 bg-green-500/10' :
-                        'border-zinc-700 text-zinc-400 bg-zinc-800'
+                    selectedContact.status === 'Replied' ? 'border-green-500/30 text-green-400 bg-green-500/10' :
+                      'border-zinc-700 text-zinc-400 bg-zinc-800'
                     }`}>
                     {selectedContact.status}
                   </span>
@@ -336,8 +336,8 @@ export default function ContactsPage() {
                     onClick={() => updateStatus(selectedContact._id, status)}
                     disabled={updatingStatus === selectedContact._id}
                     className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${selectedContact.status === status
-                        ? 'bg-white/10 text-white shadow-sm'
-                        : 'text-zinc-500 hover:text-zinc-300 disabled:opacity-50'
+                      ? 'bg-white/10 text-white shadow-sm'
+                      : 'text-zinc-500 hover:text-zinc-300 disabled:opacity-50'
                       }`}
                   >
                     {updatingStatus === selectedContact._id && selectedContact.status !== status ? (

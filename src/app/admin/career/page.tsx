@@ -258,8 +258,8 @@ export default function AdminCareerPage() {
                       </p>
                     </div>
                     <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${job.status === 'active'
-                        ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                        : 'bg-red-500/10 text-red-400 border-red-500/20'
+                      ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                      : 'bg-red-500/10 text-red-400 border-red-500/20'
                       }`}>
                       {job.status || 'Active'}
                     </span>
@@ -285,8 +285,8 @@ export default function AdminCareerPage() {
                       <button
                         onClick={() => toggleStatus(job)}
                         className={`p-2 rounded-lg transition-colors ${job.status === 'active'
-                            ? 'text-green-400 hover:bg-green-500/10'
-                            : 'text-zinc-500 hover:bg-white/10'
+                          ? 'text-green-400 hover:bg-green-500/10'
+                          : 'text-zinc-500 hover:bg-white/10'
                           }`}
                         title={job.status === 'active' ? 'Click to deactivate' : 'Click to activate'}
                       >
@@ -341,32 +341,35 @@ export default function AdminCareerPage() {
 
             {/* Section 1: Basic Info */}
             <div className="bg-[#09090b] border border-white/[0.08] p-6 md:p-8 rounded-2xl">
-              <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6 border-b border-white/[0.08] pb-4">Job Details</h3>
+              <div className="flex items-center justify-between mb-6 border-b border-white/[0.08] pb-4">
+                <h3 className="text-sm font-bold text-white uppercase tracking-widest">Job Details</h3>
+                <span className="text-[10px] text-zinc-600"><span className="text-red-400">*</span> Required fields</span>
+              </div>
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-zinc-400 uppercase">Job Title</label>
+                  <label className="text-xs font-medium text-zinc-400 uppercase">Job Title <span className="text-red-400">*</span></label>
                   <input type="text" required value={formData.title} onChange={(e) => handleInputChange('title', e.target.value)}
                     className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:bg-zinc-800 transition-all placeholder:text-zinc-600"
                     placeholder="e.g. Senior BIM Engineer"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-zinc-400 uppercase">Department</label>
+                  <label className="text-xs font-medium text-zinc-400 uppercase">Department <span className="text-zinc-600">(Optional)</span></label>
                   <input type="text" value={formData.department} onChange={(e) => handleInputChange('department', e.target.value)}
                     className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:bg-zinc-800 transition-all placeholder:text-zinc-600"
                     placeholder="e.g. Engineering"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-zinc-400 uppercase">Location</label>
+                  <label className="text-xs font-medium text-zinc-400 uppercase">Location <span className="text-red-400">*</span></label>
                   <input type="text" required value={formData.location} onChange={(e) => handleInputChange('location', e.target.value)}
                     className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:bg-zinc-800 transition-all placeholder:text-zinc-600"
                     placeholder="e.g. Remote / New York"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-zinc-400 uppercase">Employment Type</label>
+                  <label className="text-xs font-medium text-zinc-400 uppercase">Employment Type <span className="text-red-400">*</span></label>
                   <select value={formData.type} onChange={(e) => handleInputChange('type', e.target.value)}
                     className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:bg-zinc-800 transition-all cursor-pointer"
                   >
@@ -377,14 +380,14 @@ export default function AdminCareerPage() {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-zinc-400 uppercase">Experience</label>
+                  <label className="text-xs font-medium text-zinc-400 uppercase">Experience <span className="text-zinc-600">(Optional)</span></label>
                   <input type="text" value={formData.experience} onChange={(e) => handleInputChange('experience', e.target.value)}
                     className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:bg-zinc-800 transition-all placeholder:text-zinc-600"
                     placeholder="e.g. 3-5 Years"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-zinc-400 uppercase">Salary (Optional)</label>
+                  <label className="text-xs font-medium text-zinc-400 uppercase">Salary <span className="text-zinc-600">(Optional)</span></label>
                   <input type="text" value={formData.salary} onChange={(e) => handleInputChange('salary', e.target.value)}
                     className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:bg-zinc-800 transition-all placeholder:text-zinc-600"
                     placeholder="e.g. $80k - $100k"
@@ -402,7 +405,7 @@ export default function AdminCareerPage() {
               </div>
 
               <div className="mt-6 space-y-2">
-                <label className="text-xs font-medium text-zinc-400 uppercase">Description</label>
+                <label className="text-xs font-medium text-zinc-400 uppercase">Description <span className="text-red-400">*</span></label>
                 <textarea rows={5} required value={formData.description} onChange={(e) => handleInputChange('description', e.target.value)}
                   className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:bg-zinc-800 transition-all placeholder:text-zinc-600 resize-y"
                   placeholder="Detailed job description..."
