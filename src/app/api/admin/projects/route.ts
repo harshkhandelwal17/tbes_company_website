@@ -1,35 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Project from '@/models/Project';
-import fs from 'fs';
-import path from 'path';
-import { writeFile } from 'fs/promises';
+import { uploadToCloudinary, deleteFromCloudinary, extractPublicId } from '@/lib/cloudinary';
 
-// Ensure upload directories exist
-function ensureUploadDirs() {
-  const imageDir = path.join(process.cwd(), 'public/uploads/images');
-
-  if (!fs.existsSync(imageDir)) {
-    fs.mkdirSync(imageDir, { recursive: true });
-  }
-}
-
-// Helper to save file
-async function saveFile(file: File): Promise<string> {
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
-  const filepath = path.join(process.cwd(), 'public/uploads/images', filename);
-  await writeFile(filepath, buffer);
-  return `/uploads/images/${filename}`;
-}
-
-// POST - Create new project
+// POST - Create new project (images → Cloudinary)
 export async function POST(req: NextRequest) {
   try {
-    // 1. Process Form Data FIRST (before DB connection)
     const formData = await req.formData();
 
-    // Extract fields
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
     const location = formData.get('location') as string;
@@ -39,68 +17,38 @@ export async function POST(req: NextRequest) {
     const areaStr = formData.get('area') as string;
     const modelUrl = formData.get('modelUrl') as string;
     const modelType = formData.get('modelType') as string;
-    const existingImagesStr = formData.get('existingImages') as string;
 
     const parsedLod = lodStr ? parseInt(lodStr.replace(/\D/g, '')) : NaN;
     const lod = !isNaN(parsedLod) ? parsedLod : undefined;
-
     const parsedArea = areaStr ? parseInt(areaStr) : NaN;
     const area = !isNaN(parsedArea) ? parsedArea : undefined;
 
-    // 2. Handle File Uploads (Async)
-    ensureUploadDirs();
-
-    // Handle new images
-    const newImageFiles = formData.getAll('newImages') as File[];
-    // Also support 'images' key for backward compatibility or simple forms
-    const legacyImageFiles = formData.getAll('images') as File[];
-    const allImageFiles = [...newImageFiles, ...legacyImageFiles];
+    // Upload images to Cloudinary
+    const allImageFiles = [
+      ...(formData.getAll('newImages') as File[]),
+      ...(formData.getAll('images') as File[]),
+    ];
 
     const uploadedImageUrls: string[] = [];
 
-    // Parallelize uploads
-    const uploadPromises = allImageFiles.map(async (file) => {
-      if (file && file.size > 0) {
-        return await saveFile(file);
-      }
-      return null;
-    });
+    await Promise.all(
+      allImageFiles.map(async (file) => {
+        if (file && file.size > 0) {
+          const buffer = Buffer.from(await file.arrayBuffer());
+          const { secure_url } = await uploadToCloudinary(buffer, 'tbes-projects', 'image');
+          uploadedImageUrls.push(secure_url);
+        }
+      })
+    );
 
-    const results = await Promise.all(uploadPromises);
-    results.forEach(url => {
-      if (url) uploadedImageUrls.push(url);
-    });
-
-    // Parse existing images if any (mostly for duplication check or just appending)
-    // For POST, we mainly care about new images, but logic might vary.
-    // Usually POST = new project = valid images.
-
-    if (uploadedImageUrls.length === 0 && (!existingImagesStr || existingImagesStr === '[]')) {
-      // Only error if NO images at all are provided. 
-      // Depending on business logic, maybe images are optional? 
-      // User said "At least one image file is required" in original code.
-      // Let's keep it lenient or strictly enforce.
-      // Original code enforced: if (!imageFiles || imageFiles.length === 0)
-    }
-
-    // 3. Connect to DB ONLY after heavy lifting
-    console.log('Connecting to DB for Project Creation...');
     await connectDB();
 
-    const projectData = {
-      title,
-      description,
-      location,
-      lod,
-      sow,
-      projectType,
-      area,
+    const project = await Project.create({
+      title, description, location, lod, sow, projectType, area,
       imageUrls: JSON.stringify(uploadedImageUrls),
       modelUrl,
       modelType,
-    };
-
-    const project = await Project.create(projectData);
+    });
 
     return NextResponse.json(project);
   } catch (error) {
@@ -112,12 +60,10 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// PUT - Update existing project
+// PUT - Update existing project (keeps existing Cloudinary images + uploads new ones)
 export async function PUT(req: NextRequest) {
   try {
-    // 1. Process Form Data
     const formData = await req.formData();
-
     const id = formData.get('id') as string;
     if (!id) return NextResponse.json({ error: 'Project ID required' }, { status: 400 });
 
@@ -130,75 +76,64 @@ export async function PUT(req: NextRequest) {
     const areaStr = formData.get('area') as string;
     const modelUrl = formData.get('modelUrl') as string;
     const modelType = formData.get('modelType') as string;
-
-    // "existingImages" comes from frontend as JSON string of URLs to KEEP
     const existingImagesStr = formData.get('existingImages') as string;
 
     const parsedLod = lodStr ? parseInt(lodStr.replace(/\D/g, '')) : NaN;
     const lod = !isNaN(parsedLod) ? parsedLod : undefined;
-
     const parsedArea = areaStr ? parseInt(areaStr) : NaN;
     const area = !isNaN(parsedArea) ? parsedArea : undefined;
 
-    // 2. Handle New File Uploads
-    ensureUploadDirs();
-    const newImageFiles = formData.getAll('newImages') as File[];
-    // Legacy support
-    const legacyImageFiles = formData.getAll('images') as File[];
-    const allNewFiles = [...newImageFiles, ...legacyImageFiles];
-
-    const newImageUrls: string[] = [];
-    const uploadPromises = allNewFiles.map(async (file) => {
-      if (file && file.size > 0) {
-        return await saveFile(file);
-      }
-      return null;
-    });
-
-    const results = await Promise.all(uploadPromises);
-    results.forEach(url => {
-      if (url) newImageUrls.push(url);
-    });
-
-    // 3. Prepare Final Image List
-    let finalImageUrls: string[] = [];
-
-    // Parse existing images that the user wants to KEEP
+    // Parse existing Cloudinary URLs to keep
+    let keepUrls: string[] = [];
     if (existingImagesStr) {
       try {
         const parsed = JSON.parse(existingImagesStr);
-        if (Array.isArray(parsed)) finalImageUrls = parsed;
-      } catch (e) {
-        // console.error("Error parsing existingImages:", e);
-      }
+        if (Array.isArray(parsed)) keepUrls = parsed;
+      } catch { /* ignore */ }
     }
 
-    // Merge new images
-    finalImageUrls = [...finalImageUrls, ...newImageUrls];
+    // Upload new images to Cloudinary
+    const allNewFiles = [
+      ...(formData.getAll('newImages') as File[]),
+      ...(formData.getAll('images') as File[]),
+    ];
 
-    // 4. Connect to DB and Update
-    console.log('Connecting to DB for Project Update...');
+    const newImageUrls: string[] = [];
+    await Promise.all(
+      allNewFiles.map(async (file) => {
+        if (file && file.size > 0) {
+          const buffer = Buffer.from(await file.arrayBuffer());
+          const { secure_url } = await uploadToCloudinary(buffer, 'tbes-projects', 'image');
+          newImageUrls.push(secure_url);
+        }
+      })
+    );
+
+    // Find URLs that were removed (were in DB but not in keepUrls) and delete from Cloudinary
     await connectDB();
-
-    const updateData = {
-      title,
-      description,
-      location,
-      lod,
-      sow,
-      projectType,
-      area,
-      imageUrls: JSON.stringify(finalImageUrls),
-      modelUrl,
-      modelType,
-    };
-
-    const project = await Project.findByIdAndUpdate(id, updateData, { new: true });
-
-    if (!project) {
-      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+    const existing = await Project.findById(id);
+    if (existing?.imageUrls) {
+      let oldUrls: string[] = [];
+      try { oldUrls = JSON.parse(existing.imageUrls); } catch { /* ignore */ }
+      const removedUrls = oldUrls.filter(u => !keepUrls.includes(u));
+      await Promise.all(
+        removedUrls.map(u => deleteFromCloudinary(extractPublicId(u), 'image'))
+      );
     }
 
+    const finalImageUrls = [...keepUrls, ...newImageUrls];
+
+    const project = await Project.findByIdAndUpdate(
+      id,
+      {
+        title, description, location, lod, sow, projectType, area,
+        imageUrls: JSON.stringify(finalImageUrls),
+        modelUrl, modelType,
+      },
+      { new: true }
+    );
+
+    if (!project) return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     return NextResponse.json(project);
   } catch (error) {
     console.error('Error updating project:', error);
@@ -209,44 +144,36 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// DELETE - Delete project
+// DELETE - Delete project + cleanup ALL Cloudinary assets (images + 3D model)
 export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
-
     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
 
     await connectDB();
     const project = await Project.findById(id);
-
     if (!project) return NextResponse.json({ error: 'Project not found' }, { status: 404 });
 
-    // Try to delete images from filesystem (optional, doesn't break if fails)
-    try {
+    // 1. Delete project images from Cloudinary
+    if (project.imageUrls) {
       let imageUrls: string[] = [];
-      if (project.imageUrls) {
-        try {
-          const parsed = JSON.parse(project.imageUrls);
-          imageUrls = Array.isArray(parsed) ? parsed : [parsed];
-        } catch {
-          imageUrls = [project.imageUrls];
-        }
-      }
+      try { imageUrls = JSON.parse(project.imageUrls); } catch { /* ignore */ }
 
-      for (const url of imageUrls) {
-        const filePath = path.join(process.cwd(), 'public', url);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-        }
-      }
-    } catch (e) {
-      console.error('Error deleting files:', e);
+      await Promise.all(
+        imageUrls.map(url => deleteFromCloudinary(extractPublicId(url), 'image'))
+      );
     }
 
+    // 2. Delete 3D model from Cloudinary (stored as 'raw')
+    if (project.modelUrl && project.modelUrl.includes('cloudinary.com')) {
+      await deleteFromCloudinary(extractPublicId(project.modelUrl), 'raw');
+    }
+
+    // 3. Delete from DB
     await Project.findByIdAndDelete(id);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, message: 'Project and all associated files deleted.' });
   } catch (error) {
     console.error('Error deleting project:', error);
     return NextResponse.json(

@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Job from "@/models/Job";
 
-
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   await connectDB();
-  const jobs = await Job.find().sort({ createdAt: -1 });
+  const showAll = req.nextUrl.searchParams.get('all') === 'true';
+  // Public: only active jobs. Admin (?all=true): all jobs
+  const filter = showAll ? {} : { status: 'active', active: true };
+  const jobs = await Job.find(filter).sort({ createdAt: -1 });
   return NextResponse.json(jobs);
 }
 
@@ -16,9 +18,9 @@ export async function POST(req: NextRequest) {
   const data = await req.json();
 
   try {
-    console.log("Creating job with data:", JSON.stringify(data, null, 2));
-    const job = await Job.create(data);
-    console.log("Job created:", job);
+    // Sync active boolean with status string — single source of truth
+    const isActive = data.status !== 'inactive';
+    const job = await Job.create({ ...data, active: isActive });
     return NextResponse.json({ message: "Job created successfully", job });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -34,7 +36,9 @@ export async function PUT(req: NextRequest) {
   if (!id) return NextResponse.json({ error: "Job ID required" }, { status: 400 });
 
   try {
-    const job = await Job.findByIdAndUpdate(id, data, { new: true });
+    // Sync active boolean with status string on every update
+    const isActive = data.status !== 'inactive';
+    const job = await Job.findByIdAndUpdate(id, { ...data, active: isActive }, { new: true });
     if (!job) return NextResponse.json({ error: "Job not found" }, { status: 404 });
     return NextResponse.json({ message: "Job updated successfully", job });
   } catch (error: any) {

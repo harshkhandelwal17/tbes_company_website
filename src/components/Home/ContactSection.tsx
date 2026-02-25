@@ -165,7 +165,7 @@ const ContactSection = () => {
                         <label className="text-[10px] text-slate-500 uppercase font-black tracking-widest pl-1">Phone</label>
                         <input
                           name="phone" value={form.phone} onChange={handleChange}
-                          type="tel" placeholder="+1 (555) 000-0000"
+                          type="tel" placeholder="+91 9165000-000"
                           className="w-full bg-white/[0.03] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-slate-600"
                         />
                       </div>

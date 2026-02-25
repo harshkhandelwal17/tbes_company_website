@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { 
-  Briefcase, MapPin, Clock, DollarSign, 
-  Plus, Search, Edit2, Trash2, Save, 
-  X, ChevronLeft, CheckCircle, AlertCircle 
+import {
+  Briefcase, MapPin, Clock, DollarSign,
+  Plus, Search, Edit2, Trash2, Save,
+  X, ChevronLeft, CheckCircle, AlertCircle, ToggleLeft, ToggleRight
 } from 'lucide-react'
 
 interface Job {
@@ -20,6 +20,7 @@ interface Job {
   salary?: string
   createdAt: string
   status?: string
+  active?: boolean
 }
 
 export default function AdminCareerPage() {
@@ -27,7 +28,7 @@ export default function AdminCareerPage() {
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
-  
+
   // UI States
   const [view, setView] = useState<'list' | 'form'>('list')
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -56,8 +57,8 @@ export default function AdminCareerPage() {
       setFilteredJobs(jobs)
     } else {
       const lowerQ = searchQuery.toLowerCase()
-      setFilteredJobs(jobs.filter(j => 
-        j.title.toLowerCase().includes(lowerQ) || 
+      setFilteredJobs(jobs.filter(j =>
+        j.title.toLowerCase().includes(lowerQ) ||
         j.location.toLowerCase().includes(lowerQ)
       ))
     }
@@ -65,14 +66,15 @@ export default function AdminCareerPage() {
 
   const loadJobs = async () => {
     try {
-      const response = await fetch('/api/jobs')
+      // Admin should see ALL jobs (active + inactive) — use the public jobs read-all
+      const response = await fetch('/api/jobs?all=true')
       if (response.ok) {
         const data = await response.json()
         setJobs(data)
         setFilteredJobs(data)
       }
-    } catch (error) {
-      console.error('Failed to load jobs:', error)
+    } catch (_error) {
+      console.error('Failed to load jobs')
     } finally {
       setLoading(false)
     }
@@ -136,9 +138,25 @@ export default function AdminCareerPage() {
         if (response.ok) {
           loadJobs()
         }
-      } catch (error) {
-        console.error('Failed to delete job:', error)
+      } catch (_error) {
+        console.error('Failed to delete job')
       }
+    }
+  }
+
+  // Toggle job active/inactive without opening the edit form
+  const toggleStatus = async (job: Job) => {
+    const newStatus = job.status === 'active' ? 'inactive' : 'active'
+    try {
+      await fetch(`/api/jobs?id=${job._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...job, status: newStatus })
+      })
+      setJobs(prev => prev.map(j => j._id === job._id ? { ...j, status: newStatus, active: newStatus === 'active' } : j))
+      setFilteredJobs(prev => prev.map(j => j._id === job._id ? { ...j, status: newStatus, active: newStatus === 'active' } : j))
+    } catch (_error) {
+      console.error('Failed to toggle job status')
     }
   }
 
@@ -178,20 +196,20 @@ export default function AdminCareerPage() {
 
   return (
     <div className="space-y-8">
-      
+
       {/* =======================
           VIEW: LIST (Dashboard)
       ======================== */}
       {view === 'list' && (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          
+
           {/* Header & Toolbar */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h1 className="text-3xl font-bold text-white tracking-tight">Career Management</h1>
               <p className="text-zinc-400 text-sm mt-1">Manage job openings and requirements.</p>
             </div>
-            
+
             <button
               onClick={() => { resetForm(); setView('form'); }}
               className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-900/20 active:scale-95"
@@ -203,9 +221,9 @@ export default function AdminCareerPage() {
           {/* Search Bar */}
           <div className="relative group">
             <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-blue-400 transition-colors" />
-            <input 
-              type="text" 
-              placeholder="Search jobs by title or location..." 
+            <input
+              type="text"
+              placeholder="Search jobs by title or location..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-12 bg-[#09090b] border border-white/[0.08] rounded-xl pl-12 pr-4 text-white placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
@@ -215,7 +233,7 @@ export default function AdminCareerPage() {
           {/* Jobs Grid */}
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[1,2,3,4].map(i => <div key={i} className="h-48 bg-zinc-900 rounded-2xl animate-pulse"></div>)}
+              {[1, 2, 3, 4].map(i => <div key={i} className="h-48 bg-zinc-900 rounded-2xl animate-pulse"></div>)}
             </div>
           ) : filteredJobs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 border border-dashed border-white/10 rounded-2xl bg-white/[0.02]">
@@ -228,7 +246,7 @@ export default function AdminCareerPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {filteredJobs.map(job => (
                 <div key={job._id} className="group bg-[#09090b] border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.15] transition-all relative overflow-hidden">
-                  
+
                   {/* Status Indicator */}
                   <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-white/5 to-transparent -mr-10 -mt-10 rounded-bl-full transition-colors ${job.status === 'active' ? 'from-green-500/10' : 'from-red-500/10'}`}></div>
 
@@ -239,11 +257,10 @@ export default function AdminCareerPage() {
                         <Briefcase size={12} /> {job.department || 'General'}
                       </p>
                     </div>
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                      job.status === 'active' 
-                        ? 'bg-green-500/10 text-green-400 border-green-500/20' 
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${job.status === 'active'
+                        ? 'bg-green-500/10 text-green-400 border-green-500/20'
                         : 'bg-red-500/10 text-red-400 border-red-500/20'
-                    }`}>
+                      }`}>
                       {job.status || 'Active'}
                     </span>
                   </div>
@@ -263,16 +280,26 @@ export default function AdminCareerPage() {
                   </div>
 
                   <div className="flex items-center justify-between pt-4 border-t border-white/[0.08] relative z-10">
-                    <span className="text-xs text-zinc-600">Posted: {new Date(job.createdAt).toLocaleDateString()}</span>
+                    <span className="text-xs text-zinc-600">Posted: {new Date(job.createdAt).toLocaleDateString('en-GB')}</span>
                     <div className="flex gap-2">
-                      <button 
+                      <button
+                        onClick={() => toggleStatus(job)}
+                        className={`p-2 rounded-lg transition-colors ${job.status === 'active'
+                            ? 'text-green-400 hover:bg-green-500/10'
+                            : 'text-zinc-500 hover:bg-white/10'
+                          }`}
+                        title={job.status === 'active' ? 'Click to deactivate' : 'Click to activate'}
+                      >
+                        {job.status === 'active' ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+                      </button>
+                      <button
                         onClick={() => startEdit(job)}
                         className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                         title="Edit Job"
                       >
                         <Edit2 size={16} />
                       </button>
-                      <button 
+                      <button
                         onClick={() => deleteJob(job._id)}
                         className="p-2 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                         title="Delete Job"
@@ -293,11 +320,11 @@ export default function AdminCareerPage() {
       ======================== */}
       {view === 'form' && (
         <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-right-8 duration-300">
-          
+
           {/* Form Header */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-4">
-              <button 
+              <button
                 onClick={resetForm}
                 className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
               >
@@ -311,11 +338,11 @@ export default function AdminCareerPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
-            
+
             {/* Section 1: Basic Info */}
             <div className="bg-[#09090b] border border-white/[0.08] p-6 md:p-8 rounded-2xl">
               <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6 border-b border-white/[0.08] pb-4">Job Details</h3>
-              
+
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-zinc-400 uppercase">Job Title</label>
@@ -385,7 +412,7 @@ export default function AdminCareerPage() {
 
             {/* Section 2: Requirements & Responsibilities */}
             <div className="grid md:grid-cols-2 gap-6">
-              
+
               {/* Requirements */}
               <div className="bg-[#09090b] border border-white/[0.08] p-6 rounded-2xl flex flex-col h-full">
                 <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-4 flex justify-between items-center">
@@ -438,15 +465,15 @@ export default function AdminCareerPage() {
 
             {/* Actions */}
             <div className="flex gap-4 pt-4 border-t border-white/[0.08]">
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={loading}
                 className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-900/20 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save size={18} /> {loading ? 'Saving...' : 'Save Job'}
               </button>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={resetForm}
                 className="px-8 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-xl transition-colors active:scale-95"
               >
