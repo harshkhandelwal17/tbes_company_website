@@ -78,8 +78,8 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
   const imageInputRef = useRef<HTMLInputElement>(null);
   const modelInputRef = useRef<HTMLInputElement>(null);
 
-  // Handle 3D model file upload with progress
-  const handleModelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle 3D model file upload with progress (R2 Migration)
+  const handleModelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -88,68 +88,54 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
     setIsModelUploading(true);
     setModelFileName(file.name);
 
-    const uploadFormData = new FormData();
-    uploadFormData.append('file', file);
-    uploadFormData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'tbes-projects');
+    try {
+      // 1. Get presigned URL from our API
+      const uploadRes = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type || 'application/octet-stream',
+          folder: 'tbes-models'
+        })
+      });
 
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dcha7gy9o';
-    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`;
-
-    const xhr = new XMLHttpRequest();
-
-    xhr.upload.addEventListener('progress', (event) => {
-      if (event.lengthComputable) {
-        const percent = Math.round((event.loaded / event.total) * 100);
-        setModelUploadProgress(percent);
+      if (!uploadRes.ok) {
+        const err = await uploadRes.json();
+        throw new Error(err.error || 'Failed to get upload URL');
       }
-    });
 
-    xhr.addEventListener('load', () => {
-      setIsModelUploading(false);
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const response = JSON.parse(xhr.responseText);
-          // Cloudinary response for 'raw' files includes secure_url
-          if (response.secure_url) {
-            setFormData(prev => ({
-              ...prev,
-              modelUrl: response.secure_url,
-              modelType: file.name.split('.').pop()?.toLowerCase() || 'glb',
-            }));
-            setModelUploadProgress(100);
-          } else {
-            setModelUploadError('Cloudinary upload failed: No URL returned');
-            setModelUploadProgress(0);
-          }
-        } catch {
-          setModelUploadError('Invalid response from Cloudinary');
-          setModelUploadProgress(0);
-        }
+      const { presignedUrl, publicUrl } = await uploadRes.json();
+
+      // 2. Upload directly to R2 using fetch
+      const progressInterval = setInterval(() => {
+        setModelUploadProgress(prev => Math.min(prev + 5, 95));
+      }, 500);
+
+      const r2Res = await fetch(presignedUrl, {
+        method: 'PUT',
+        body: file,
+      });
+
+      clearInterval(progressInterval);
+
+      if (r2Res.ok) {
+        setFormData(prev => ({
+          ...prev,
+          modelUrl: publicUrl,
+          modelType: file.name.split('.').pop()?.toLowerCase() || 'glb',
+        }));
+        setModelUploadProgress(100);
       } else {
-        try {
-          const errResponse = JSON.parse(xhr.responseText);
-          setModelUploadError(errResponse.error?.message || `Cloudinary Error (${xhr.status})`);
-        } catch {
-          setModelUploadError(`Cloudinary Error with status ${xhr.status}`);
-        }
-        setModelUploadProgress(0);
+        throw new Error(`Upload failed with status ${r2Res.status}`);
       }
-    });
-
-    xhr.addEventListener('error', () => {
       setIsModelUploading(false);
-      setModelUploadError('Network error — please check your connection and Cloudinary settings');
-      setModelUploadProgress(0);
-    });
 
-    xhr.addEventListener('abort', () => {
+    } catch (err: any) {
       setIsModelUploading(false);
-      setModelUploadError('Upload cancelled');
+      setModelUploadError(err.message || 'R2 Upload failed');
       setModelUploadProgress(0);
-    });
-
-    xhr.open('POST', uploadUrl);
-    xhr.send(uploadFormData);
+    }
   };
 
   const removeModel = () => {

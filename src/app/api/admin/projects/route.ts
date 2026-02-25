@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Project from '@/models/Project';
-import { uploadToCloudinary, deleteFromCloudinary, extractPublicId } from '@/lib/cloudinary';
+import { uploadToR2, deleteFromR2, extractR2Key } from '@/lib/r2';
 
-// POST - Create new project (images → Cloudinary)
+// POST - Create new project (images → R2)
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     const parsedArea = areaStr ? parseInt(areaStr) : NaN;
     const area = !isNaN(parsedArea) ? parsedArea : undefined;
 
-    // Upload images to Cloudinary
+    // Upload images to R2
     const allImageFiles = [
       ...(formData.getAll('newImages') as File[]),
       ...(formData.getAll('images') as File[]),
@@ -35,8 +35,13 @@ export async function POST(req: NextRequest) {
       allImageFiles.map(async (file) => {
         if (file && file.size > 0) {
           const buffer = Buffer.from(await file.arrayBuffer());
-          const { secure_url } = await uploadToCloudinary(buffer, 'tbes-projects', 'image');
-          uploadedImageUrls.push(secure_url);
+          const timestamp = Date.now();
+          const random = Math.floor(Math.random() * 10000);
+          const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+          const key = `tbes-projects/${timestamp}-${random}-${sanitizedFilename}`;
+
+          const publicUrl = await uploadToR2(buffer, key, file.type || 'image/jpeg');
+          uploadedImageUrls.push(publicUrl);
         }
       })
     );
@@ -60,7 +65,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// PUT - Update existing project (keeps existing Cloudinary images + uploads new ones)
+// PUT - Update existing project (keeps existing R2 images + uploads new ones)
 export async function PUT(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -83,7 +88,7 @@ export async function PUT(req: NextRequest) {
     const parsedArea = areaStr ? parseInt(areaStr) : NaN;
     const area = !isNaN(parsedArea) ? parsedArea : undefined;
 
-    // Parse existing Cloudinary URLs to keep
+    // Parse existing R2 URLs to keep
     let keepUrls: string[] = [];
     if (existingImagesStr) {
       try {
@@ -92,7 +97,7 @@ export async function PUT(req: NextRequest) {
       } catch { /* ignore */ }
     }
 
-    // Upload new images to Cloudinary
+    // Upload new images to R2
     const allNewFiles = [
       ...(formData.getAll('newImages') as File[]),
       ...(formData.getAll('images') as File[]),
@@ -103,13 +108,18 @@ export async function PUT(req: NextRequest) {
       allNewFiles.map(async (file) => {
         if (file && file.size > 0) {
           const buffer = Buffer.from(await file.arrayBuffer());
-          const { secure_url } = await uploadToCloudinary(buffer, 'tbes-projects', 'image');
-          newImageUrls.push(secure_url);
+          const timestamp = Date.now();
+          const random = Math.floor(Math.random() * 10000);
+          const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+          const key = `tbes-projects/${timestamp}-${random}-${sanitizedFilename}`;
+
+          const publicUrl = await uploadToR2(buffer, key, file.type || 'image/jpeg');
+          newImageUrls.push(publicUrl);
         }
       })
     );
 
-    // Find URLs that were removed (were in DB but not in keepUrls) and delete from Cloudinary
+    // Find URLs that were removed and delete from R2
     await connectDB();
     const existing = await Project.findById(id);
     if (existing?.imageUrls) {
@@ -117,8 +127,18 @@ export async function PUT(req: NextRequest) {
       try { oldUrls = JSON.parse(existing.imageUrls); } catch { /* ignore */ }
       const removedUrls = oldUrls.filter(u => !keepUrls.includes(u));
       await Promise.all(
-        removedUrls.map(u => deleteFromCloudinary(extractPublicId(u), 'image'))
+        removedUrls.map(u => {
+          const key = extractR2Key(u);
+          if (key) return deleteFromR2(key);
+          return Promise.resolve();
+        })
       );
+    }
+
+    // Also handle old model deletion if it changed
+    if (existing?.modelUrl && existing.modelUrl !== modelUrl) {
+      const oldModelKey = extractR2Key(existing.modelUrl);
+      if (oldModelKey) await deleteFromR2(oldModelKey);
     }
 
     const finalImageUrls = [...keepUrls, ...newImageUrls];
@@ -144,7 +164,7 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// DELETE - Delete project + cleanup ALL Cloudinary assets (images + 3D model)
+// DELETE - Delete project + cleanup ALL R2 assets (images + 3D model)
 export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -155,19 +175,24 @@ export async function DELETE(req: NextRequest) {
     const project = await Project.findById(id);
     if (!project) return NextResponse.json({ error: 'Project not found' }, { status: 404 });
 
-    // 1. Delete project images from Cloudinary
+    // 1. Delete project images from R2
     if (project.imageUrls) {
       let imageUrls: string[] = [];
       try { imageUrls = JSON.parse(project.imageUrls); } catch { /* ignore */ }
 
       await Promise.all(
-        imageUrls.map(url => deleteFromCloudinary(extractPublicId(url), 'image'))
+        imageUrls.map(url => {
+          const key = extractR2Key(url);
+          if (key) return deleteFromR2(key);
+          return Promise.resolve();
+        })
       );
     }
 
-    // 2. Delete 3D model from Cloudinary (stored as 'raw')
-    if (project.modelUrl && project.modelUrl.includes('cloudinary.com')) {
-      await deleteFromCloudinary(extractPublicId(project.modelUrl), 'raw');
+    // 2. Delete 3D model from R2
+    if (project.modelUrl) {
+      const modelKey = extractR2Key(project.modelUrl);
+      if (modelKey) await deleteFromR2(modelKey);
     }
 
     // 3. Delete from DB

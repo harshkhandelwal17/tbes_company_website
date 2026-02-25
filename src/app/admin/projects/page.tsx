@@ -132,77 +132,25 @@ export default function AdminProjectsPage() {
     }));
   };
 
-  // --- 2. Model Handlers (Immediate Upload with Progress) ---
+  // Handle Model Selection (Local only)
   const handleModelSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setModelUploadError('');
     setModelUploadProgress(0);
-    setIsModelUploading(true);
+    setIsModelUploading(false); // We are NOT uploading yet
     setModelFileName(file.name);
     setModelFileSize(file.size);
     setNewModelFile(file);
 
-    const uploadFormData = new FormData();
-    uploadFormData.append('file', file);
-    uploadFormData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'tbes-projects');
-
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dcha7gy9o';
-    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`;
-
-    const xhr = new XMLHttpRequest();
-
-    xhr.upload.addEventListener('progress', (event) => {
-      if (event.lengthComputable) {
-        const percent = Math.round((event.loaded / event.total) * 100);
-        setModelUploadProgress(percent);
-      }
-    });
-
-    xhr.addEventListener('load', () => {
-      setIsModelUploading(false);
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const response = JSON.parse(xhr.responseText);
-          if (response.secure_url) {
-            setFormData(prev => ({
-              ...prev,
-              modelUrl: response.secure_url,
-              modelType: file.name.split('.').pop()?.toLowerCase() || 'glb'
-            }));
-            setModelUploadProgress(100);
-          } else {
-            setModelUploadError('Cloudinary upload failed: No URL returned');
-            setModelUploadProgress(0);
-            setNewModelFile(null);
-          }
-        } catch {
-          setModelUploadError('Invalid response from Cloudinary');
-          setModelUploadProgress(0);
-          setNewModelFile(null);
-        }
-      } else {
-        try {
-          const errRes = JSON.parse(xhr.responseText);
-          setModelUploadError(errRes.error?.message || `Cloudinary Error (${xhr.status})`);
-        } catch {
-          setModelUploadError(`Cloudinary Error with status ${xhr.status}`);
-        }
-        setModelUploadProgress(0);
-        setNewModelFile(null);
-      }
-    });
-
-    xhr.addEventListener('error', () => {
-      setIsModelUploading(false);
-      setModelUploadError('Network error — check your Cloudinary settings');
-      setModelUploadProgress(0);
-      setNewModelFile(null);
-    });
-
-    xhr.open('POST', uploadUrl);
-    xhr.send(uploadFormData);
+    // We set a temporary modelUrl (locally generated) just to show the success UI state
+    // but the real R2 URL will be set during submit.
+    setFormData(prev => ({
+      ...prev,
+      modelUrl: URL.createObjectURL(file), // Local preview URL
+      modelType: file.name.split('.').pop()?.toLowerCase() || 'glb'
+    }));
   };
 
   const removeNewModel = () => {
@@ -223,32 +171,45 @@ export default function AdminProjectsPage() {
   // --- Submit with Progress Simulation ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Block submit if model is still uploading
-    if (isModelUploading) {
-      alert('3D Model abhi upload ho raha hai, please wait!');
-      return;
-    }
-
     setIsSubmitting(true);
     setUploadProgress(0);
 
-    // 1. Simulate Progress (0% to 90%)
-    // Since standard fetch doesn't support upload progress, we simulate it for UX
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 90) {
-          clearInterval(interval);
-          return 90;
-        }
-        return prev + 10;
-      });
-    }, 400); // Updates every 400ms
-
     try {
-      const uploadData = new FormData();
+      let finalModelUrl = formData.modelUrl;
 
-      // Basic Fields
+      // 1. Upload NEW Model to R2 if selected
+      if (newModelFile) {
+        setIsModelUploading(true);
+        setModelUploadProgress(10);
+
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filename: newModelFile.name,
+            contentType: newModelFile.type || 'application/octet-stream',
+            folder: 'tbes-models'
+          })
+        });
+
+        if (!uploadRes.ok) throw new Error('Failed to get model upload URL');
+        const { presignedUrl, publicUrl } = await uploadRes.json();
+
+        const progressInterval = setInterval(() => {
+          setModelUploadProgress(prev => Math.min(prev + 10, 90));
+        }, 400);
+
+        const r2Res = await fetch(presignedUrl, { method: 'PUT', body: newModelFile });
+        clearInterval(progressInterval);
+
+        if (!r2Res.ok) throw new Error('R2 Model Upload failed');
+        finalModelUrl = publicUrl;
+        setModelUploadProgress(100);
+        setIsModelUploading(false);
+      }
+
+      // 2. Prepare Form Data for Project API (Images will be handled by the route's server-side logic)
+      const uploadData = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
         if (key === 'images') {
           uploadData.append('existingImages', JSON.stringify(value));
@@ -257,38 +218,33 @@ export default function AdminProjectsPage() {
         }
       });
 
-      // Handle Model Logic - model is already uploaded, just pass the URL
-      if (formData.modelUrl) {
-        uploadData.append('modelUrl', formData.modelUrl);
+      // Pass the final R2 model URL
+      if (finalModelUrl) {
+        uploadData.append('modelUrl', finalModelUrl);
       }
 
       if (editingProject) uploadData.append('id', editingProject.id);
-
-      // Append NEW image files only (model already uploaded separately)
       newImageFiles.forEach((file) => uploadData.append('newImages', file));
 
       const url = '/api/admin/projects';
       const method = editingProject ? 'PUT' : 'POST';
 
-      // 2. Real Upload Request
+      // 3. Submit Project Metadata and Images
       const res = await fetch(url, { method, body: uploadData });
-
-      // 3. Complete Progress
-      clearInterval(interval);
-      setUploadProgress(100);
 
       if (res.ok) {
         await fetchProjects();
-        // Small delay to show 100% before closing
+        setUploadProgress(100);
         setTimeout(() => setIsFormOpen(false), 500);
       } else {
         alert('Failed to save project');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert('Error uploading data');
+      alert('Error: ' + error.message);
     } finally {
       setIsSubmitting(false);
+      setIsModelUploading(false);
     }
   };
 

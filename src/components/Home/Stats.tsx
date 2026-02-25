@@ -63,7 +63,7 @@ const Stats = () => {
       icon: Layers,
       value: 5,
       suffix: "M+",
-      label: "Sq. Ft. Modeled",
+      label: "Sq. M. Modeled",
       desc: "High Fidelity Models"
     },
     {

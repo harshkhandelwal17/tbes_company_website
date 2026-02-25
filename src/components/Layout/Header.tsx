@@ -71,7 +71,7 @@ const Header = () => {
             <Link href="/" onClick={() => setIsMenuOpen(false)} className="flex-shrink-0 z-50 relative">
               <div className={`relative transition-all duration-300 ${scrolled ? 'h-12' : 'h-16'} w-auto`}>
                 <Image
-                  src="/logo.png"
+                  src="/logo3.png"
                   alt="TBES Global"
                   width={788}
                   height={485}

@@ -58,6 +58,8 @@ export default function AdminServicesPage() {
   });
 
   // Image Upload States
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
   const [imageUploadProgress, setImageUploadProgress] = useState(0);
   const [isImageUploading, setIsImageUploading] = useState(false);
   const [imageUploadError, setImageUploadError] = useState('');
@@ -114,70 +116,61 @@ export default function AdminServicesPage() {
         keyDeliverables: [''], faqs: [{ question: '', answer: '' }],
       });
     }
+    setPendingImageFile(null);
+    setImagePreview(service?.image || '');
     setIsFormOpen(true);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle Image Selection (Local Preview only)
+  const handleImageSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setPendingImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
     setImageUploadError('');
     setImageUploadProgress(0);
-    setIsImageUploading(true);
-
-    const uploadFormData = new FormData();
-    uploadFormData.append('file', file);
-    uploadFormData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'tbes-projects');
-
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dcha7gy9o';
-    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-
-    const xhr = new XMLHttpRequest();
-
-    xhr.upload.addEventListener('progress', (event) => {
-      if (event.lengthComputable) {
-        const percent = Math.round((event.loaded / event.total) * 100);
-        setImageUploadProgress(percent);
-      }
-    });
-
-    xhr.addEventListener('load', () => {
-      setIsImageUploading(false);
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const response = JSON.parse(xhr.responseText);
-          if (response.secure_url) {
-            setForm(prev => ({ ...prev, image: response.secure_url }));
-            setImageUploadProgress(100);
-          } else {
-            setImageUploadError('Upload failed: No URL returned');
-          }
-        } catch {
-          setImageUploadError('Invalid response from Cloudinary');
-        }
-      } else {
-        setImageUploadError(`Error ${xhr.status} — please check settings`);
-      }
-    });
-
-    xhr.addEventListener('error', () => {
-      setIsImageUploading(false);
-      setImageUploadError('Network error — please check your connection');
-    });
-
-    xhr.open('POST', uploadUrl);
-    xhr.send(uploadFormData);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isImageUploading) {
-      alert('Photo upload ho rahi hai, please wait!');
-      return;
-    }
     setIsSubmitting(true);
+    let finalImageUrl = form.image;
 
     try {
+      // 1. Upload image to R2 IF a new one was selected
+      if (pendingImageFile) {
+        setIsImageUploading(true);
+        setImageUploadProgress(10);
+
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filename: pendingImageFile.name,
+            contentType: pendingImageFile.type || 'image/jpeg',
+            folder: 'tbes-services'
+          })
+        });
+
+        if (!uploadRes.ok) throw new Error('Failed to get upload URL');
+        const { presignedUrl, publicUrl } = await uploadRes.json();
+
+        const progressInterval = setInterval(() => {
+          setImageUploadProgress(prev => Math.min(prev + 15, 90));
+        }, 300);
+
+        const r2Res = await fetch(presignedUrl, { method: 'PUT', body: pendingImageFile });
+        clearInterval(progressInterval);
+
+        if (!r2Res.ok) throw new Error('R2 Upload failed');
+
+        finalImageUrl = publicUrl;
+        setImageUploadProgress(100);
+        setIsImageUploading(false);
+      }
+
+      // 2. Submit Service Data
       const url = editingId ? `/api/services/${editingId}` : '/api/services';
       const method = editingId ? 'PUT' : 'POST';
 
@@ -186,6 +179,7 @@ export default function AdminServicesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          image: finalImageUrl,
           details: (form.details || []).filter(d => d.trim() !== ''),
           software: (form.software || []).filter(s => s.trim() !== ''),
           benefits: (form.benefits || []).filter(b => b.trim() !== ''),
@@ -202,10 +196,12 @@ export default function AdminServicesPage() {
       } else {
         alert('Failed to save service.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      setImageUploadError(error.message);
     } finally {
       setIsSubmitting(false);
+      setIsImageUploading(false);
     }
   };
 
@@ -420,12 +416,12 @@ export default function AdminServicesPage() {
                     <div className="space-y-1.5 md:col-span-2">
                       <label className="text-xs font-medium text-zinc-400">Service Banner Image <span className="text-zinc-600">(Optional)</span></label>
                       <div className="flex flex-col gap-4">
-                        {form.image && (
+                        {imagePreview && (
                           <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group/img">
-                            <img src={form.image} alt="Preview" className="w-full h-full object-cover" />
+                            <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                             <button
                               type="button"
-                              onClick={() => setForm({ ...form, image: '' })}
+                              onClick={() => { setForm({ ...form, image: '' }); setImagePreview(''); setPendingImageFile(null); }}
                               className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity"
                             >
                               <X size={14} />
@@ -436,34 +432,19 @@ export default function AdminServicesPage() {
                           <input
                             type="file"
                             accept="image/*"
-                            onChange={handleImageUpload}
-                            disabled={isImageUploading}
+                            onChange={handleImageSelection}
                             className="hidden"
                             id="image-upload"
                           />
                           <label
                             htmlFor="image-upload"
-                            className={`flex flex-col items-center justify-center gap-3 w-full py-8 border-2 border-dashed rounded-2xl cursor-pointer transition-all ${isImageUploading ? 'bg-zinc-800/50 border-blue-500/50' : 'bg-zinc-900 border-white/5 hover:bg-zinc-800 hover:border-white/20'}`}
+                            className={`flex flex-col items-center justify-center gap-3 w-full py-8 border-2 border-dashed rounded-2xl cursor-pointer transition-all bg-zinc-900 border-white/5 hover:bg-zinc-800 hover:border-white/20`}
                           >
-                            {isImageUploading ? (
-                              <>
-                                <Loader2 size={24} className="text-blue-500 animate-spin" />
-                                <div className="text-center">
-                                  <p className="text-sm font-bold text-white">Uploading... {imageUploadProgress}%</p>
-                                  <div className="w-32 h-1 bg-white/5 rounded-full mt-2 overflow-hidden mx-auto">
-                                    <div className="h-full bg-blue-500" style={{ width: `${imageUploadProgress}%` }}></div>
-                                  </div>
-                                </div>
-                              </>
-                            ) : (
-                              <>
-                                <div className="p-3 bg-blue-500/10 rounded-full text-blue-400">
-                                  <LucideIcons.Upload size={20} />
-                                </div>
-                                <p className="text-sm text-zinc-400"><span className="text-blue-500 font-bold">Click to upload</span> or drag and drop</p>
-                                <p className="text-[10px] text-zinc-600 uppercase font-bold tracking-widest">SVG, PNG, JPG (MAX. 5MB)</p>
-                              </>
-                            )}
+                            <div className="p-3 bg-blue-500/10 rounded-full text-blue-400">
+                              <LucideIcons.Upload size={20} />
+                            </div>
+                            <p className="text-sm text-zinc-400"><span className="text-blue-500 font-bold">Click to upload</span> or drag and drop</p>
+                            <p className="text-[10px] text-zinc-600 uppercase font-bold tracking-widest">SVG, PNG, JPG (MAX. 5MB)</p>
                           </label>
                           {imageUploadError && <p className="text-xs text-red-400 mt-2">{imageUploadError}</p>}
                         </div>
@@ -617,10 +598,26 @@ export default function AdminServicesPage() {
               <button
                 type="submit"
                 form="serviceForm"
-                disabled={isSubmitting}
-                className="flex-1 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                disabled={isSubmitting || isImageUploading}
+                className="flex-1 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 flex flex-col items-center justify-center"
               >
-                {isSubmitting ? <><Loader2 size={18} className="animate-spin" /> Saving...</> : <><Save size={18} /> Save Service</>}
+                {isSubmitting ? (
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="flex items-center gap-2">
+                      <Loader2 size={18} className="animate-spin" />
+                      <span>{isImageUploading ? `Uploading Photo... ${imageUploadProgress}%` : 'Saving Service...'}</span>
+                    </div>
+                    {isImageUploading && (
+                      <div className="w-48 h-1 bg-white/20 rounded-full mt-1 overflow-hidden">
+                        <div className="h-full bg-white transition-all duration-300" style={{ width: `${imageUploadProgress}%` }}></div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Save size={18} /> Save Service
+                  </div>
+                )}
               </button>
             </div>
 

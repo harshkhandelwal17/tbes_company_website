@@ -128,16 +128,7 @@ const Hero = () => {
                 ></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-[#030509] via-transparent to-transparent opacity-90"></div>
 
-                {/* UI Overlay inside the Render */}
-                <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
-                  <div className="px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-lg border border-white/10 flex items-center gap-2">
-                    <ScanLine size={14} className="text-cyan-400" />
-                    <span className="text-[10px] font-mono text-white">SCAN TO BIM : ACTIVE</span>
-                  </div>
-                  <div className="p-2 bg-black/60 backdrop-blur-md rounded-lg border border-white/10 text-zinc-400">
-                    <Maximize2 size={14} />
-                  </div>
-                </div>
+               
               </div>
             </div>
 
@@ -156,15 +147,7 @@ const Hero = () => {
                </div>
             </div>
 
-            {/* Desktop Quick Stats (Bottom Right Area) */}
-            <div className="absolute bottom-6 right-8 z-0 flex gap-8">
-              <div className="flex flex-col items-end">
-                <span className="text-3xl font-black text-white">{projectCount}+</span>
-                <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold flex items-center gap-1">
-                  <Layers size={12} className="text-blue-500" /> Projects Delivered
-                </span>
-              </div>
-            </div>
+          
 
           </div>
 

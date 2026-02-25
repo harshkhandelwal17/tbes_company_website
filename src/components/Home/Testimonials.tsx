@@ -12,25 +12,21 @@ const Testimonials = () => {
       text: "Good job team . it is really impressive to work with the team!",
       author: "Senior Architect",
       company: "T.J. Design Studio",
-      location: "United States"
     },
     {
       text: "I am impressed with the work. It looks better than I thought it could be!!! I definitely look forward to work with the team in the future.",
       author: "Project Manager",
       company: "B.H. Construction",
-      location: "United Kingdom"
     },
     {
       text: "Great progress. Thank you guys for the dedicated effort!",
       author: "BIM Lead",
       company: "R.E.",
-      location: "UAE"
     },
       {
       text: "Good job on the project with very little errors!!! Thankyou very much and wish your team all the best!",
       author: "BIM Lead",
       company: "K M",
-      location: "UAE"
     }
   ];
 
@@ -113,12 +109,7 @@ const Testimonials = () => {
                 {/* Vertical Divider (Desktop only) */}
                 <div className="hidden sm:block w-px h-8 bg-slate-300"></div>
 
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-slate-200 shadow-sm w-fit">
-                  <Globe size={14} className="text-blue-500" />
-                  <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
-                    {reviews[current].location}
-                  </span>
-                </div>
+              
               </div>
 
               {/* Navigation Arrows (Safe from overlapping) */}

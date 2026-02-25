@@ -1,6 +1,5 @@
 'use client';
 
-import { CldUploadWidget } from 'next-cloudinary';
 import { useState, useEffect } from 'react';
 import {
   MapPin, Clock, Briefcase, Users, Award, Target,
@@ -36,6 +35,66 @@ const ApplicationModal = ({ job, onClose }: { job: Job; onClose: () => void }) =
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Resume size should be less than 5MB");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      // 1. Get presigned URL
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type || 'application/pdf',
+          folder: 'tbes-resumes'
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to get upload URL');
+      }
+
+      const { presignedUrl, publicUrl } = await res.json();
+
+      // 2. Upload directly to R2 using fetch
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 10, 95));
+      }, 300);
+
+      const r2Res = await fetch(presignedUrl, {
+        method: 'PUT',
+        body: file,
+      });
+
+      clearInterval(progressInterval);
+
+      if (r2Res.ok) {
+        setFormData(prev => ({ ...prev, resumeUrl: publicUrl }));
+        setUploadProgress(100);
+      } else {
+        alert("Resume upload failed. Please try again.");
+        setUploadProgress(0);
+      }
+      setIsUploading(false);
+
+    } catch (error: any) {
+      setIsUploading(false);
+      alert(error.message || "Something went wrong during upload.");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,33 +198,55 @@ const ApplicationModal = ({ job, onClose }: { job: Job; onClose: () => void }) =
 
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-slate-400">Resume/CV (PDF) <span className="text-red-400">*</span></label>
-                <CldUploadWidget
-                  uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "tbes-global-uploads"}
-                  onSuccess={(result: any) => {
-                    if (result.info?.secure_url) setFormData(prev => ({ ...prev, resumeUrl: result.info.secure_url }));
-                  }}
-                  options={{ sources: ['local', 'google_drive'], clientAllowedFormats: ['pdf', 'doc', 'docx'], maxFileSize: 5000000, multiple: false }}
-                >
-                  {({ open }) => (
-                    <div onClick={() => open()} className={`group border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${formData.resumeUrl ? 'border-green-500/30 bg-green-500/5' : 'border-white/10 hover:border-blue-500/50 hover:bg-blue-500/5'}`}>
-                      {formData.resumeUrl ? (
-                        <div className="flex flex-col items-center gap-2 text-green-400">
-                          <div className="p-3 bg-green-500/20 rounded-full"><CheckCircle2 size={24} /></div>
-                          <span className="font-bold text-sm">Resume Attached</span>
-                          <span className="text-xs text-green-400/60">Ready to submit</span>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center gap-3 text-slate-400 group-hover:text-blue-400">
-                          <div className="p-3 bg-white/5 rounded-full group-hover:bg-blue-500/20 transition-colors"><UploadCloud size={24} /></div>
-                          <div>
-                            <p className="font-bold text-sm text-white group-hover:text-blue-300">Click to Upload Resume</p>
-                            <p className="text-xs mt-1 text-slate-500">PDF, DOCX (Max 5MB)</p>
+                {/* R2 Migration: Custom file upload instead of CldUploadWidget */}
+                <div className="relative">
+                  <input
+                    type="file"
+                    id="resume-upload"
+                    className="hidden"
+                    accept=".pdf,.doc,.docx"
+                    onChange={handleResumeUpload}
+                    disabled={isUploading}
+                  />
+                  <div
+                    onClick={() => !isUploading && document.getElementById('resume-upload')?.click()}
+                    className={`group border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${formData.resumeUrl
+                      ? 'border-green-500/30 bg-green-500/5'
+                      : isUploading
+                        ? 'border-blue-500/30 bg-blue-500/5 cursor-wait'
+                        : 'border-white/10 hover:border-blue-500/50 hover:bg-blue-500/5'
+                      }`}
+                  >
+                    {isUploading ? (
+                      <div className="flex flex-col items-center gap-3 text-blue-400">
+                        <div className="p-3 bg-blue-500/20 rounded-full animate-pulse"><UploadCloud size={24} /></div>
+                        <div>
+                          <p className="font-bold text-sm text-white">Uploading Resume...</p>
+                          <div className="w-32 bg-white/10 h-1.5 rounded-full mt-2 overflow-hidden">
+                            <div
+                              className="bg-blue-500 h-full transition-all duration-300"
+                              style={{ width: `${uploadProgress}%` }}
+                            />
                           </div>
                         </div>
-                      )}
-                    </div>
-                  )}
-                </CldUploadWidget>
+                      </div>
+                    ) : formData.resumeUrl ? (
+                      <div className="flex flex-col items-center gap-2 text-green-400">
+                        <div className="p-3 bg-green-500/20 rounded-full"><CheckCircle2 size={24} /></div>
+                        <span className="font-bold text-sm">Resume Attached</span>
+                        <span className="text-xs text-green-400/60">Correctly uploaded to TBES storage</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-3 text-slate-400 group-hover:text-blue-400">
+                        <div className="p-3 bg-white/5 rounded-full group-hover:bg-blue-500/20 transition-colors"><UploadCloud size={24} /></div>
+                        <div>
+                          <p className="font-bold text-sm text-white group-hover:text-blue-300">Click to Upload Resume</p>
+                          <p className="text-xs mt-1 text-slate-500">PDF, DOCX (Max 5MB)</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-1.5">

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Service from '@/models/Service';
-import { deleteFromCloudinary, extractPublicId } from '@/lib/cloudinary';
+import { deleteFromR2, extractR2Key } from '@/lib/r2';
 
 export async function GET(
     req: Request,
@@ -28,6 +28,17 @@ export async function PUT(
         await connectDB();
         const { id } = await params;
         const body = await req.json();
+
+        // Find existing service to see if image is changing
+        const existing = await Service.findById(id);
+        if (existing && body.image && existing.image !== body.image) {
+            // New image provided and it's different from old one
+            if (existing.image && existing.image.includes(process.env.R2_PUBLIC_URL || "")) {
+                const oldKey = extractR2Key(existing.image);
+                if (oldKey) await deleteFromR2(oldKey);
+            }
+        }
+
         const service = await Service.findByIdAndUpdate(id, body, { new: true });
         if (!service) return NextResponse.json({ error: 'Service not found' }, { status: 404 });
         return NextResponse.json(service);
@@ -47,9 +58,9 @@ export async function DELETE(
         const service = await Service.findById(id);
         if (!service) return NextResponse.json({ error: 'Service not found' }, { status: 404 });
 
-        // Delete service image from Cloudinary if it exists
-        if (service.image && service.image.includes('cloudinary.com')) {
-            await deleteFromCloudinary(extractPublicId(service.image), 'image');
+        // Delete service image from R2 if it exists
+        if (service.image && service.image.includes(process.env.R2_PUBLIC_URL || "")) {
+            await deleteFromR2(extractR2Key(service.image));
         }
 
         await Service.findByIdAndDelete(id);

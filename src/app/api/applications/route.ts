@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Application from '@/models/Application';
 import Job from '@/models/Job'; // Keep registered
-import { deleteFromCloudinary, extractPublicId } from '@/lib/cloudinary';
+import { deleteFromR2, extractR2Key } from '@/lib/r2';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,10 +30,10 @@ export async function DELETE(req: NextRequest) {
         const application = await Application.findById(id);
         if (!application) return NextResponse.json({ error: 'Application not found' }, { status: 404 });
 
-        // Delete resume PDF from Cloudinary if it was uploaded there
-        if (application.resumeUrl && application.resumeUrl.includes('cloudinary.com')) {
-            // Resumes are uploaded as 'raw' (PDF files)
-            await deleteFromCloudinary(extractPublicId(application.resumeUrl), 'raw');
+        // Delete resume PDF from R2 if it was uploaded there
+        if (application.resumeUrl && application.resumeUrl.includes(process.env.R2_PUBLIC_URL || "")) {
+            // Resumes are uploaded as 'raw' or 'pdf' in R2
+            await deleteFromR2(extractR2Key(application.resumeUrl));
         }
 
         await Application.findByIdAndDelete(id);
