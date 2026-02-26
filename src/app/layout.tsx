@@ -17,7 +17,7 @@ export const metadata = {
   description: 'Innovative Building Information Modeling (BIM) solutions and services provider serving architects, engineers, contractors, and consultants globally.',
   keywords: ['BIM', 'CAD Services', 'Architecture', 'Engineering', 'Construction', '3D Modeling'],
   icons: {
-    icon: '/favicon.ico', // Make sure you have a favicon
+    icon: '/logo.png', // Make sure you have a favicon
   },
   openGraph: {
     type: 'website',
