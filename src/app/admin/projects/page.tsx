@@ -195,14 +195,32 @@ export default function AdminProjectsPage() {
         if (!uploadRes.ok) throw new Error('Failed to get model upload URL');
         const { presignedUrl, publicUrl } = await uploadRes.json();
 
-        const progressInterval = setInterval(() => {
-          setModelUploadProgress(prev => Math.min(prev + 10, 90));
-        }, 400);
+        // Real progress tracking with XHR
+        await new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
 
-        const r2Res = await fetch(presignedUrl, { method: 'PUT', body: newModelFile });
-        clearInterval(progressInterval);
+          xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+              const percentComplete = Math.round((event.loaded / event.total) * 100);
+              setModelUploadProgress(Math.min(percentComplete, 99)); // Cap at 99% until fully done
+            }
+          };
 
-        if (!r2Res.ok) throw new Error('R2 Model Upload failed');
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve();
+            } else {
+              reject(new Error(`R2 Model Upload failed with status ${xhr.status}`));
+            }
+          };
+
+          xhr.onerror = () => reject(new Error('Network error during model upload'));
+          xhr.onabort = () => reject(new Error('Model upload aborted'));
+
+          xhr.open('PUT', presignedUrl);
+          xhr.setRequestHeader('Content-Type', newModelFile.type || 'application/octet-stream');
+          xhr.send(newModelFile);
+        });
         finalModelUrl = publicUrl;
         setModelUploadProgress(100);
         setIsModelUploading(false);

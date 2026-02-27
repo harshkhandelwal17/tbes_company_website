@@ -107,28 +107,42 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
 
       const { presignedUrl, publicUrl } = await uploadRes.json();
 
-      // 2. Upload directly to R2 using fetch
-      const progressInterval = setInterval(() => {
-        setModelUploadProgress(prev => Math.min(prev + 5, 95));
-      }, 500);
+      // 2. Upload directly to R2 using XMLHttpRequest for real progress tracking
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
 
-      const r2Res = await fetch(presignedUrl, {
-        method: 'PUT',
-        body: file,
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            // Real progress calculated from bytes uploaded
+            const percentComplete = Math.round((event.loaded / event.total) * 100);
+            // Cap at 99% until fully complete (which is done after resolve)
+            setModelUploadProgress(Math.min(percentComplete, 99));
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve();
+          } else {
+            reject(new Error(`Upload failed with status ${xhr.status}`));
+          }
+        };
+
+        xhr.onerror = () => reject(new Error('Network error during upload'));
+        xhr.onabort = () => reject(new Error('Upload aborted'));
+
+        xhr.open('PUT', presignedUrl);
+        // Important: Set the Content-Type to match what R2 expects from the presigned URL
+        xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+        xhr.send(file);
       });
 
-      clearInterval(progressInterval);
-
-      if (r2Res.ok) {
-        setFormData(prev => ({
-          ...prev,
-          modelUrl: publicUrl,
-          modelType: file.name.split('.').pop()?.toLowerCase() || 'glb',
-        }));
-        setModelUploadProgress(100);
-      } else {
-        throw new Error(`Upload failed with status ${r2Res.status}`);
-      }
+      setFormData(prev => ({
+        ...prev,
+        modelUrl: publicUrl,
+        modelType: file.name.split('.').pop()?.toLowerCase() || 'glb',
+      }));
+      setModelUploadProgress(100);
       setIsModelUploading(false);
 
     } catch (err: any) {
