@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Briefcase, FolderKanban, MessageSquare,
   FileText, LogOut, Menu, X, Search,
-  ChevronRight, ShieldCheck, Layers
+  ChevronRight, ShieldCheck, Layers, Star
 } from 'lucide-react';
 
 export default function AdminLayout({
@@ -27,6 +27,7 @@ export default function AdminLayout({
     { name: 'Projects', href: '/admin/projects' },
     { name: 'Inquiries', href: '/admin/contacts' },
     { name: 'Applications', href: '/admin/applications' },
+    { name: 'Reviews', href: '/admin/reviews' },
   ];
 
   const searchResults = searchQuery.trim()
@@ -71,6 +72,7 @@ export default function AdminLayout({
         { name: 'Services', href: '/admin/services', icon: Layers }, // Added Services link
         { name: 'Projects', href: '/admin/projects', icon: FolderKanban },
         { name: 'Inquiries', href: '/admin/contacts', icon: MessageSquare },
+        { name: 'Reviews', href: '/admin/reviews', icon: Star },
         { name: 'Applications', href: '/admin/applications', icon: FileText },
       ]
     }
