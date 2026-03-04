@@ -2,7 +2,7 @@
 
 import { Building2, Users2, Layers, Globe2 } from 'lucide-react';
 import { useEffect, useState, useRef, useMemo } from 'react';
-import { getProjectCount } from '@/lib/companyStats';
+import { getProjectCount, getSqMModeled, getHappyClients, getCountriesServed } from '@/lib/companyStats';
 
 // --- Counter Hook (Same as before) ---
 const Counter = ({ end, duration = 2000 }: { end: number, duration?: number }) => {
@@ -49,36 +49,41 @@ const Counter = ({ end, duration = 2000 }: { end: number, duration?: number }) =
 };
 
 const Stats = () => {
-  const projectCount = useMemo(() => getProjectCount(), []);
+  const statsValues = useMemo(() => ({
+    projects: getProjectCount(),
+    sqm: getSqMModeled(),
+    clients: getHappyClients(),
+    countries: getCountriesServed()
+  }), []);
 
   const stats = [
     {
       icon: Building2,
-      value: projectCount,
+      value: statsValues.projects,
       suffix: "+",
       label: "Projects Delivered",
       desc: "Residential & Commercial"
     },
     {
       icon: Layers,
-      value: 5,
+      value: statsValues.sqm,
       suffix: "M+",
       label: "Sq. M. Modeled",
       desc: "High Fidelity Models"
     },
     {
       icon: Users2,
-      value: 50,
+      value: statsValues.clients,
       suffix: "+",
       label: "Happy Clients",
-      desc: " USA, UK, Europe, and Middle East"
+      desc: "USA, UK, Europe, and Middle East"
     },
     {
       icon: Globe2,
-      value: 100,
-      suffix: "%",
-      label: "On-Time Delivery",
-      desc: "Deadline Guarantee"
+      value: statsValues.countries,
+      suffix: "+",
+      label: "Countries Served",
+      desc: "USA, UK, Europe, and Middle East"
     }
   ];
 

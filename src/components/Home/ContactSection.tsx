@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Mail, Phone, MapPin, Send, CheckCircle2, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, CheckCircle2, ArrowRight, AlertCircle, Loader2 ,LocationEdit} from 'lucide-react';
 
 const ContactSection = () => {
   const [form, setForm] = useState({
@@ -105,6 +105,15 @@ const ContactSection = () => {
                   <p className="text-white font-bold text-lg">+91 629 479 6582</p>
                 </div>
               </a>
+               <div className="group flex items-center gap-5 p-5 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] hover:border-emerald-500/50 transition-all">
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                  <LocationEdit size={24} />
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Address</p>
+                  <p className="text-white font-bold text-lg">Benachity, Durgapur, West Bengal, India - 713213</p>
+                </div>
+              </div>
             </div>
 
             <div className="flex items-start gap-3 text-slate-500 text-sm justify-center lg:justify-start">

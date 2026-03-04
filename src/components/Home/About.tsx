@@ -26,7 +26,7 @@ const About = () => {
             <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-video lg:aspect-square group">
               <div
                 className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                style={{ backgroundImage: "url('https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=2070&auto=format&fit=crop')" }}
+                style={{ backgroundImage: "url('home-design-professional-uses-architectural-software-develop-floor-plan.jpg')" }}
               ></div>
               {/* Overlay with subtle branding */}
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent"></div>

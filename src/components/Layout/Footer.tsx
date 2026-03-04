@@ -1,11 +1,11 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
   Mail, Phone, MapPin, Linkedin, Twitter, Youtube,
-  Instagram, Facebook, ArrowRight, ExternalLink, Heart
+  Instagram, Facebook, ArrowRight, ExternalLink, Heart,
+  MessageCircle
 } from 'lucide-react';
 
 interface FooterService {
@@ -70,13 +70,13 @@ const Footer = () => {
               An innovative BIM & Digital Twin solutions provider, serving architects and contractors globally with ISO-certified precision since 2018.
             </p>
 
-            {/* Social Icons with Brand Colors on Hover */}
             <div className="flex items-center gap-3 pt-2">
               {[
-                { icon: Linkedin, color: 'hover:bg-[#0A66C2] hover:border-[#0A66C2]', link: 'https://www.linkedin.com/company/tbesglobalpvtltd' },
-                { icon: Youtube, color: 'hover:bg-[#FF0000] hover:border-[#FF0000]', link: 'https://www.youtube.com/@tbesglobalprivatelimited4604' },
-                { icon: Instagram, color: 'hover:bg-gradient-to-tr hover:from-[#f09433] hover:via-[#dc2743] hover:to-[#bc1888] hover:border-transparent', link: 'https://www.instagram.com/tbesglobalprivatelimited/' },
-                { icon: Facebook, color: 'hover:bg-[#1877F2] hover:border-[#1877F2]', link: 'https://www.facebook.com/TBESGLOBALPVTLTD/' },
+                { icon: MessageCircle, color: 'bg-[#25D366] border-[#25D366]', link: 'https://wa.me/916294796582' },
+                { icon: Linkedin, color: 'bg-[#0A66C2] border-[#0A66C2]', link: 'https://www.linkedin.com/company/tbesglobalpvtltd' },
+                { icon: Youtube, color: 'bg-[#FF0000] border-[#FF0000]', link: 'https://www.youtube.com/@tbesglobalprivatelimited4604' },
+                { icon: Instagram, color: 'bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] border-transparent', link: 'https://www.instagram.com/tbesglobalprivatelimited/' },
+                { icon: Facebook, color: 'bg-[#1877F2] border-[#1877F2]', link: 'https://www.facebook.com/TBESGLOBALPVTLTD/' },
               ].map((social, idx) => (
                 <a
                   key={idx}

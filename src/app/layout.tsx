@@ -3,7 +3,7 @@ import { Plus_Jakarta_Sans } from 'next/font/google'; // Updated Font
 import Layout from '@/components/Layout/Layout';
 
 // "Plus Jakarta Sans" modern aur corporate websites ke liye best hai
-const font = Plus_Jakarta_Sans({ 
+const font = Plus_Jakarta_Sans({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700', '800'],
   variable: '--font-primary',
@@ -17,7 +17,9 @@ export const metadata = {
   description: 'Innovative Building Information Modeling (BIM) solutions and services provider serving architects, engineers, contractors, and consultants globally.',
   keywords: ['BIM', 'CAD Services', 'Architecture', 'Engineering', 'Construction', '3D Modeling'],
   icons: {
-    icon: '/logo.png', // Make sure you have a favicon
+    icon: '/logo2.png',
+    shortcut: '/logo2.png',
+    apple: '/logo2.png',
   },
   openGraph: {
     type: 'website',

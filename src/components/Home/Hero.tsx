@@ -15,7 +15,7 @@ const Hero = () => {
   }, []);
 
   return (
-    <section className="relative w-full pt-32 pb-20 lg:min-h-screen lg:pt-0 lg:pb-0 flex items-center bg-[#030509] overflow-hidden selection:bg-blue-500/30">
+    <section className="relative w-full pt-16 pb-20 lg:min-h-screen lg:pt-0 lg:pb-0 flex items-center bg-[#030509] overflow-hidden selection:bg-blue-500/30">
 
       {/* =========================================
           1. CINEMATIC BACKGROUND EFFECTS
@@ -38,16 +38,9 @@ const Hero = () => {
           {/* =========================================
               2. LEFT: TYPOGRAPHY & ACTIONS
           ========================================= */}
-          <div className={`lg:col-span-6 space-y-8 transition-all duration-1000 ease-out ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className={`lg:col-span-6 space-y-1 transition-all duration-1000 ease-out ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
 
-            {/* Glowing Tech Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-xl shadow-[0_0_20px_rgba(59,130,246,0.1)]">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-              </span>
-              <span className="text-zinc-300 text-[10px] sm:text-xs font-bold tracking-widest uppercase">ISO 19650 Certified Excellence</span>
-            </div>
+           
 
             {/* Main Headline with Depth Effect */}
             <h1 className="text-4xl sm:text-5xl lg:text-[4rem] xl:text-[4.5rem] font-extrabold tracking-tight text-white leading-[1.1] relative">
@@ -80,7 +73,7 @@ const Hero = () => {
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-white via-blue-50 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <span className="relative z-10 flex items-center">
-                  Start Project
+                  Get a quote
                   <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
                 </span>
               </Link>
@@ -132,8 +125,6 @@ const Hero = () => {
               </div>
             </div>
 
-          
-
             {/* Floating Element 2 (Bottom Left) */}
             <div className="absolute bottom-24 left-4 z-20 bg-white/[0.05] backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl animate-[bounce_5s_ease-in-out_infinite_reverse]">
                <div className="flex items-center gap-3">
@@ -141,7 +132,7 @@ const Hero = () => {
                    <CheckCircle2 size={20} />
                  </div>
                  <div>
-                   <p className="text-xs text-zinc-400 font-medium">MEPF & Architectural </p>
+                   <p className="text-xs text-zinc-400 font-medium">Architecture,Structure and MEPF </p>
                    <p className="text-sm font-bold text-white">Zero Clashes</p>
                  </div>
                </div>
