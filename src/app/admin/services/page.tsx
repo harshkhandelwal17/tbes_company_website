@@ -132,6 +132,43 @@ export default function AdminServicesPage() {
     setImageUploadProgress(0);
   };
 
+  // --- Helper: Direct R2 Upload ---
+  const uploadToR2Direct = async (file: File, folder: string, onProgress: (pct: number) => void): Promise<string> => {
+    const uploadRes = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        filename: file.name,
+        contentType: file.type || 'image/jpeg',
+        folder
+      })
+    });
+
+    if (!uploadRes.ok) throw new Error(`Failed to get upload URL for ${file.name}`);
+    const { presignedUrl, publicUrl } = await uploadRes.json();
+
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = Math.round((event.loaded / event.total) * 100);
+          onProgress(percentComplete);
+        }
+      };
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) resolve();
+        else reject(new Error(`R2 upload failed for ${file.name}`));
+      };
+      xhr.onerror = () => reject(new Error(`Network error during R2 upload of ${file.name}`));
+      xhr.onabort = () => reject(new Error(`R2 upload aborted for ${file.name}`));
+      xhr.open('PUT', presignedUrl);
+      xhr.setRequestHeader('Content-Type', file.type || 'image/jpeg');
+      xhr.send(file);
+    });
+
+    return publicUrl;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -143,29 +180,10 @@ export default function AdminServicesPage() {
         setIsImageUploading(true);
         setImageUploadProgress(10);
 
-        const uploadRes = await fetch('/api/upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            filename: pendingImageFile.name,
-            contentType: pendingImageFile.type || 'image/jpeg',
-            folder: 'tbes-services'
-          })
+        finalImageUrl = await uploadToR2Direct(pendingImageFile, 'tbes-services', (pct) => {
+          setImageUploadProgress(Math.min(pct, 99));
         });
 
-        if (!uploadRes.ok) throw new Error('Failed to get upload URL');
-        const { presignedUrl, publicUrl } = await uploadRes.json();
-
-        const progressInterval = setInterval(() => {
-          setImageUploadProgress(prev => Math.min(prev + 15, 90));
-        }, 300);
-
-        const r2Res = await fetch(presignedUrl, { method: 'PUT', body: pendingImageFile });
-        clearInterval(progressInterval);
-
-        if (!r2Res.ok) throw new Error('R2 Upload failed');
-
-        finalImageUrl = publicUrl;
         setImageUploadProgress(100);
         setIsImageUploading(false);
       }
@@ -194,7 +212,8 @@ export default function AdminServicesPage() {
         await fetchServices();
         setIsFormOpen(false);
       } else {
-        alert('Failed to save service.');
+        const errData = await res.json();
+        alert('Failed to save service: ' + (errData.error || 'Unknown error'));
       }
     } catch (error: any) {
       console.error(error);
