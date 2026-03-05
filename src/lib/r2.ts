@@ -8,21 +8,30 @@ function getR2Client(): S3Client {
     if (r2ClientInstance) return r2ClientInstance;
 
     const accountId = (process.env.R2_ACCOUNT_ID || "").trim();
-    if (!accountId) {
-        console.error("[R2 ERROR] R2_ACCOUNT_ID is missing from environment variables.");
+    const accessKeyId = (process.env.R2_ACCESS_KEY_ID || "").trim();
+    const secretAccessKey = (process.env.R2_SECRET_ACCESS_KEY || "").trim();
+    const bucketName = (process.env.R2_BUCKET_NAME || "").trim();
+
+    if (!accountId || !accessKeyId || !secretAccessKey || !bucketName) {
+        const missing = [];
+        if (!accountId) missing.push("R2_ACCOUNT_ID");
+        if (!accessKeyId) missing.push("R2_ACCESS_KEY_ID");
+        if (!secretAccessKey) missing.push("R2_SECRET_ACCESS_KEY");
+        if (!bucketName) missing.push("R2_BUCKET_NAME");
+
+        const errorMsg = `[R2 ERROR] Missing configuration: ${missing.join(", ")}. Please check Vercel environment variables.`;
+        console.error(errorMsg);
+        throw new Error(errorMsg);
     }
 
     r2ClientInstance = new S3Client({
         region: "auto",
         endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
         credentials: {
-            accessKeyId: (process.env.R2_ACCESS_KEY_ID || "").trim(),
-            secretAccessKey: (process.env.R2_SECRET_ACCESS_KEY || "").trim(),
+            accessKeyId,
+            secretAccessKey,
         },
-        // R2 works best with path-style access for current SDK versions on the account endpoint
         forcePathStyle: true,
-        // CRITICAL: Prevent SDK from automatically calculating and signing checksums.
-        // This is the root cause of the 403 Forbidden error in browser uploads.
         requestChecksumCalculation: "WHEN_REQUIRED",
         responseChecksumValidation: "WHEN_REQUIRED",
     });

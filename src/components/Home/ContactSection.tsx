@@ -117,8 +117,6 @@ const ContactSection = () => {
             </div>
 
             <div className="flex items-start gap-3 text-slate-500 text-sm justify-center lg:justify-start">
-              <MapPin size={18} className="text-blue-500" />
-              <p>Benachity, Durgapur, West Bengal, India - 713213</p>
             </div>
           </div>
 
