@@ -2,20 +2,33 @@ import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 // Cloudflare R2 Client Configuration
-const r2Client = new S3Client({
-    region: "auto",
-    endpoint: `https://${(process.env.R2_ACCOUNT_ID || "").trim()}.r2.cloudflarestorage.com`,
-    credentials: {
-        accessKeyId: (process.env.R2_ACCESS_KEY_ID || "").trim(),
-        secretAccessKey: (process.env.R2_SECRET_ACCESS_KEY || "").trim(),
-    },
-    // R2 works best with path-style access for current SDK versions on the account endpoint
-    forcePathStyle: true,
-    // CRITICAL: Prevent SDK from automatically calculating and signing checksums.
-    // This is the root cause of the 403 Forbidden error in browser uploads.
-    requestChecksumCalculation: "WHEN_REQUIRED",
-    responseChecksumValidation: "WHEN_REQUIRED",
-});
+let r2ClientInstance: S3Client | null = null;
+
+function getR2Client(): S3Client {
+    if (r2ClientInstance) return r2ClientInstance;
+
+    const accountId = (process.env.R2_ACCOUNT_ID || "").trim();
+    if (!accountId) {
+        console.error("[R2 ERROR] R2_ACCOUNT_ID is missing from environment variables.");
+    }
+
+    r2ClientInstance = new S3Client({
+        region: "auto",
+        endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+        credentials: {
+            accessKeyId: (process.env.R2_ACCESS_KEY_ID || "").trim(),
+            secretAccessKey: (process.env.R2_SECRET_ACCESS_KEY || "").trim(),
+        },
+        // R2 works best with path-style access for current SDK versions on the account endpoint
+        forcePathStyle: true,
+        // CRITICAL: Prevent SDK from automatically calculating and signing checksums.
+        // This is the root cause of the 403 Forbidden error in browser uploads.
+        requestChecksumCalculation: "WHEN_REQUIRED",
+        responseChecksumValidation: "WHEN_REQUIRED",
+    });
+
+    return r2ClientInstance;
+}
 
 // Diagnostic check (Server-side logs only)
 if (typeof window === 'undefined') {
@@ -35,6 +48,7 @@ export async function generatePresignedUploadUrl(
     contentType: string,
     expiresIn = 3600
 ): Promise<string> {
+    const client = getR2Client();
     const command = new PutObjectCommand({
         Bucket: (process.env.R2_BUCKET_NAME || "").trim(),
         Key: key,
@@ -43,7 +57,7 @@ export async function generatePresignedUploadUrl(
     // Disable checksumming for this specific command as well.
     (command.input as any).ChecksumAlgorithm = undefined;
 
-    return await getSignedUrl(r2Client, command, {
+    return await getSignedUrl(client, command, {
         expiresIn,
         // Only sign the host to prevent browser-specific headers from breaking the signature.
         signableHeaders: new Set(["host"]),
@@ -59,6 +73,7 @@ export async function uploadToR2(
     contentType: string
 ): Promise<string> {
     try {
+        const client = getR2Client();
         const command = new PutObjectCommand({
             Bucket: (process.env.R2_BUCKET_NAME || "").trim(),
             Key: key,
@@ -69,7 +84,7 @@ export async function uploadToR2(
         // Disable checksums here too
         (command.input as any).ChecksumAlgorithm = undefined;
 
-        await r2Client.send(command);
+        await client.send(command);
         const publicBase = (process.env.R2_PUBLIC_URL || "").trim().replace(/\/$/, "");
         return `${publicBase}/${key}`;
     } catch (error: any) {
@@ -88,11 +103,12 @@ export async function uploadToR2(
  */
 export async function deleteFromR2(key: string): Promise<void> {
     try {
+        const client = getR2Client();
         const command = new DeleteObjectCommand({
             Bucket: process.env.R2_BUCKET_NAME,
             Key: key,
         });
-        await r2Client.send(command);
+        await client.send(command);
     } catch (error) {
         console.error("[R2] Delete failed for key:", key, error);
         // Non-fatal, but logged
@@ -138,4 +154,4 @@ export function extractR2Key(url: string): string {
     }
 }
 
-export default r2Client;
+export default getR2Client;
