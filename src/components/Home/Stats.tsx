@@ -76,7 +76,7 @@ const Stats = () => {
       value: statsValues.clients,
       suffix: "+",
       label: "Happy Clients",
-      desc: "USA, UK, Europe, and Middle East"
+      desc: "Architects, contractors and subcontractors"
     },
     {
       icon: Globe2,
