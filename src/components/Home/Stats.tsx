@@ -82,7 +82,7 @@ const Stats = () => {
       icon: Globe2,
       value: statsValues.countries,
       suffix: "+",
-      label: "Countries Served",
+      label: "Countries  Served",
       desc: "USA, UK, Europe, and Middle East"
     }
   ];

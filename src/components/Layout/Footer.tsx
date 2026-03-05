@@ -83,9 +83,9 @@ const Footer = () => {
                   href={social.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.03] border border-white/10 text-slate-400 transition-all duration-300 ${social.color} hover:text-white hover:-translate-y-1 shadow-lg`}
+                  className={`w-10 h-10 flex items-center justify-center rounded-xl border text-white transition-all duration-300 hover:scale-110 hover:-translate-y-1 shadow-lg ${social.color}`}
                 >
-                  <social.icon size={18} />
+                  <social.icon size={18} strokeWidth={2.5} />
                 </a>
               ))}
             </div>
