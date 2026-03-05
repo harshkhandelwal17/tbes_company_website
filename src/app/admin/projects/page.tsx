@@ -168,6 +168,43 @@ export default function AdminProjectsPage() {
     setModelFileSize(0);
   };
 
+  // --- Helper: Direct R2 Upload ---
+  const uploadToR2Direct = async (file: File, folder: string, onProgress: (pct: number) => void): Promise<string> => {
+    const uploadRes = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        filename: file.name,
+        contentType: file.type || 'application/octet-stream',
+        folder
+      })
+    });
+
+    if (!uploadRes.ok) throw new Error(`Failed to get upload URL for ${file.name}`);
+    const { presignedUrl, publicUrl } = await uploadRes.json();
+
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = Math.round((event.loaded / event.total) * 100);
+          onProgress(percentComplete);
+        }
+      };
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) resolve();
+        else reject(new Error(`R2 upload failed for ${file.name}`));
+      };
+      xhr.onerror = () => reject(new Error(`Network error during R2 upload of ${file.name}`));
+      xhr.onabort = () => reject(new Error(`R2 upload aborted for ${file.name}`));
+      xhr.open('PUT', presignedUrl);
+      xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+      xhr.send(file);
+    });
+
+    return publicUrl;
+  };
+
   // --- Submit with Progress Simulation ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -177,77 +214,53 @@ export default function AdminProjectsPage() {
     try {
       let finalModelUrl = formData.modelUrl;
 
-      // 1. Upload NEW Model to R2 if selected
+      // 1. Upload NEW Model to R2
       if (newModelFile) {
         setIsModelUploading(true);
         setModelUploadProgress(10);
-
-        const uploadRes = await fetch('/api/upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            filename: newModelFile.name,
-            contentType: newModelFile.type || 'application/octet-stream',
-            folder: 'tbes-models'
-          })
+        finalModelUrl = await uploadToR2Direct(newModelFile, 'tbes-models', (pct) => {
+          setModelUploadProgress(Math.min(pct, 99));
         });
-
-        if (!uploadRes.ok) throw new Error('Failed to get model upload URL');
-        const { presignedUrl, publicUrl } = await uploadRes.json();
-
-        // Real progress tracking with XHR
-        await new Promise<void>((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-
-          xhr.upload.onprogress = (event) => {
-            if (event.lengthComputable) {
-              const percentComplete = Math.round((event.loaded / event.total) * 100);
-              setModelUploadProgress(Math.min(percentComplete, 99)); // Cap at 99% until fully done
-            }
-          };
-
-          xhr.onload = () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              resolve();
-            } else {
-              reject(new Error(`R2 Model Upload failed with status ${xhr.status}`));
-            }
-          };
-
-          xhr.onerror = () => reject(new Error('Network error during model upload'));
-          xhr.onabort = () => reject(new Error('Model upload aborted'));
-
-          xhr.open('PUT', presignedUrl);
-          xhr.setRequestHeader('Content-Type', newModelFile.type || 'application/octet-stream');
-          xhr.send(newModelFile);
-        });
-        finalModelUrl = publicUrl;
         setModelUploadProgress(100);
         setIsModelUploading(false);
       }
 
-      // 2. Prepare Form Data for Project API (Images will be handled by the route's server-side logic)
+      // 2. Upload NEW Images to R2
+      const newlyUploadedUrls: string[] = [];
+      if (newImageFiles.length > 0) {
+        setUploadProgress(10);
+        for (let i = 0; i < newImageFiles.length; i++) {
+          const file = newImageFiles[i];
+          const url = await uploadToR2Direct(file, 'tbes-projects', (pct) => {
+            const stepProgress = Math.round(((i + pct / 100) / newImageFiles.length) * 70);
+            setUploadProgress(10 + stepProgress);
+          });
+          newlyUploadedUrls.push(url);
+        }
+      }
+
+      setUploadProgress(85);
+
+      // 3. Prepare Final Form Data
+      const finalImageUrls = [...(formData.images || []), ...newlyUploadedUrls];
       const uploadData = new FormData();
+
+      // Basic fields
       Object.entries(formData).forEach(([key, value]) => {
-        if (key === 'images') {
-          uploadData.append('existingImages', JSON.stringify(value));
-        } else if (key !== 'modelUrl') {
-          if (value !== undefined && value !== null) uploadData.append(key, value.toString());
+        if (key !== 'images' && key !== 'modelUrl' && value !== undefined && value !== null) {
+          uploadData.append(key, value.toString());
         }
       });
 
-      // Pass the final R2 model URL
-      if (finalModelUrl) {
-        uploadData.append('modelUrl', finalModelUrl);
-      }
-
+      uploadData.append('imageUrls', JSON.stringify(finalImageUrls));
+      if (finalModelUrl) uploadData.append('modelUrl', finalModelUrl);
       if (editingProject) uploadData.append('id', editingProject.id);
-      newImageFiles.forEach((file) => uploadData.append('newImages', file));
 
+      setUploadProgress(90);
+
+      // 4. Submit Metadata
       const url = '/api/admin/projects';
       const method = editingProject ? 'PUT' : 'POST';
-
-      // 3. Submit Project Metadata and Images
       const res = await fetch(url, { method, body: uploadData });
 
       if (res.ok) {
@@ -255,7 +268,8 @@ export default function AdminProjectsPage() {
         setUploadProgress(100);
         setTimeout(() => setIsFormOpen(false), 500);
       } else {
-        alert('Failed to save project');
+        const errData = await res.json();
+        throw new Error(errData.details || 'Failed to save project');
       }
     } catch (error: any) {
       console.error(error);

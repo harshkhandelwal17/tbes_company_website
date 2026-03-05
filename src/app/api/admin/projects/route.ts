@@ -3,7 +3,7 @@ import connectDB from '@/lib/mongodb';
 import Project from '@/models/Project';
 import { uploadToR2, deleteFromR2, extractR2Key } from '@/lib/r2';
 
-// POST - Create new project (images → R2)
+// POST - Create new project
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -17,40 +17,18 @@ export async function POST(req: NextRequest) {
     const areaStr = formData.get('area') as string;
     const modelUrl = formData.get('modelUrl') as string;
     const modelType = formData.get('modelType') as string;
+    const imageUrls = formData.get('imageUrls') as string; // Stringified array from frontend
 
     const parsedLod = lodStr ? parseInt(lodStr.replace(/\D/g, '')) : NaN;
     const lod = !isNaN(parsedLod) ? parsedLod : undefined;
     const parsedArea = areaStr ? parseInt(areaStr) : NaN;
     const area = !isNaN(parsedArea) ? parsedArea : undefined;
 
-    // Upload images to R2
-    const allImageFiles = [
-      ...(formData.getAll('newImages') as File[]),
-      ...(formData.getAll('images') as File[]),
-    ];
-
-    const uploadedImageUrls: string[] = [];
-
-    await Promise.all(
-      allImageFiles.map(async (file) => {
-        if (file && file.size > 0) {
-          const buffer = Buffer.from(await file.arrayBuffer());
-          const timestamp = Date.now();
-          const random = Math.floor(Math.random() * 10000);
-          const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-          const key = `tbes-projects/${timestamp}-${random}-${sanitizedFilename}`;
-
-          const publicUrl = await uploadToR2(buffer, key, file.type || 'image/jpeg');
-          uploadedImageUrls.push(publicUrl);
-        }
-      })
-    );
-
     await connectDB();
 
     const project = await Project.create({
       title, description, location, lod, sow, projectType, area,
-      imageUrls: JSON.stringify(uploadedImageUrls),
+      imageUrls: imageUrls || '[]', // Already stringified
       modelUrl,
       modelType,
     });
@@ -65,7 +43,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// PUT - Update existing project (keeps existing R2 images + uploads new ones)
+// PUT - Update existing project
 export async function PUT(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -81,79 +59,47 @@ export async function PUT(req: NextRequest) {
     const areaStr = formData.get('area') as string;
     const modelUrl = formData.get('modelUrl') as string;
     const modelType = formData.get('modelType') as string;
-    const existingImagesStr = formData.get('existingImages') as string;
+    const imageUrls = formData.get('imageUrls') as string; // Final stringified array from frontend
 
     const parsedLod = lodStr ? parseInt(lodStr.replace(/\D/g, '')) : NaN;
     const lod = !isNaN(parsedLod) ? parsedLod : undefined;
     const parsedArea = areaStr ? parseInt(areaStr) : NaN;
     const area = !isNaN(parsedArea) ? parsedArea : undefined;
 
-    // Parse existing R2 URLs to keep
-    let keepUrls: string[] = [];
-    if (existingImagesStr) {
-      try {
-        const parsed = JSON.parse(existingImagesStr);
-        if (Array.isArray(parsed)) keepUrls = parsed;
-      } catch { /* ignore */ }
-    }
+    await connectDB();
+    const existing = await Project.findById(id);
+    if (!existing) return NextResponse.json({ error: 'Project not found' }, { status: 404 });
 
-    // Upload new images to R2
-    const allNewFiles = [
-      ...(formData.getAll('newImages') as File[]),
-      ...(formData.getAll('images') as File[]),
-    ];
+    // Handle asset cleanup (find removed URLs and delete from R2)
+    const newUrls: string[] = JSON.parse(imageUrls || '[]');
+    let oldUrls: string[] = [];
+    try { oldUrls = JSON.parse(existing.imageUrls || '[]'); } catch { /* ignore */ }
 
-    const newImageUrls: string[] = [];
+    const removedUrls = oldUrls.filter(u => !newUrls.includes(u));
     await Promise.all(
-      allNewFiles.map(async (file) => {
-        if (file && file.size > 0) {
-          const buffer = Buffer.from(await file.arrayBuffer());
-          const timestamp = Date.now();
-          const random = Math.floor(Math.random() * 10000);
-          const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-          const key = `tbes-projects/${timestamp}-${random}-${sanitizedFilename}`;
-
-          const publicUrl = await uploadToR2(buffer, key, file.type || 'image/jpeg');
-          newImageUrls.push(publicUrl);
-        }
+      removedUrls.map(u => {
+        const key = extractR2Key(u);
+        if (key) return deleteFromR2(key);
+        return Promise.resolve();
       })
     );
 
-    // Find URLs that were removed and delete from R2
-    await connectDB();
-    const existing = await Project.findById(id);
-    if (existing?.imageUrls) {
-      let oldUrls: string[] = [];
-      try { oldUrls = JSON.parse(existing.imageUrls); } catch { /* ignore */ }
-      const removedUrls = oldUrls.filter(u => !keepUrls.includes(u));
-      await Promise.all(
-        removedUrls.map(u => {
-          const key = extractR2Key(u);
-          if (key) return deleteFromR2(key);
-          return Promise.resolve();
-        })
-      );
-    }
-
-    // Also handle old model deletion if it changed
-    if (existing?.modelUrl && existing.modelUrl !== modelUrl) {
+    // Handle old model deletion if it changed
+    if (existing.modelUrl && existing.modelUrl !== modelUrl) {
       const oldModelKey = extractR2Key(existing.modelUrl);
       if (oldModelKey) await deleteFromR2(oldModelKey);
     }
-
-    const finalImageUrls = [...keepUrls, ...newImageUrls];
 
     const project = await Project.findByIdAndUpdate(
       id,
       {
         title, description, location, lod, sow, projectType, area,
-        imageUrls: JSON.stringify(finalImageUrls),
+        imageUrls: imageUrls || '[]',
         modelUrl, modelType,
       },
       { new: true }
     );
 
-    if (!project) return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     return NextResponse.json(project);
   } catch (error) {
     console.error('Error updating project:', error);
