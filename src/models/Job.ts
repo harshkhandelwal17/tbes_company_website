@@ -3,6 +3,7 @@ import mongoose, { Schema, models, model } from "mongoose";
 const jobSchema = new Schema(
   {
     title: { type: String, required: true },
+    jobCode: { type: String, required: false }, // Added for Client reference
     department: { type: String, required: false }, // Added
     location: { type: String, required: true },
     type: { type: String, required: true }, // e.g., Full-time, Part-time

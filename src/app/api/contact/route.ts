@@ -33,6 +33,7 @@ export async function POST(req: Request) {
 
     // Send Email
     await sendMail({
+      to: process.env.TO_EMAIL1,
       replyTo: email,
       subject: `New Contact Inquiry: ${subject}`,
       html: `

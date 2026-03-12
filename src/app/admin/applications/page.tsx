@@ -17,6 +17,7 @@ interface Application {
   jobId: {
     _id: string;
     title: string;
+    jobCode?: string;
   } | null; // Handle if job is deleted
   createdAt: string;
 }
@@ -38,6 +39,15 @@ export default function AdminApplicationsPage() {
   const fetchApplications = async () => {
     try {
       const res = await fetch('/api/applications');
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new TypeError("Oops, we haven't got JSON!");
+      }
+
       const data = await res.json();
       if (Array.isArray(data)) {
         setApplications(data);
@@ -84,7 +94,11 @@ export default function AdminApplicationsPage() {
       app.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.email.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesRole = roleFilter === 'All' || (app.jobId?.title || 'Unknown Role') === roleFilter;
+    const roleName = app.jobId
+      ? `${app.jobId.jobCode ? `[${app.jobId.jobCode}] ` : ''}${app.jobId.title}`
+      : 'Unknown Role';
+
+    const matchesRole = roleFilter === 'All' || roleName === roleFilter;
 
     return matchesSearch && matchesRole;
   });
@@ -173,7 +187,7 @@ export default function AdminApplicationsPage() {
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 bg-blue-500/10 px-2 py-1 rounded">
-                    {app.jobId?.title || 'Unknown Role'}
+                    {app.jobId ? `${app.jobId.jobCode ? `[${app.jobId.jobCode}] ` : ''}${app.jobId.title}` : 'Unknown Role'}
                   </span>
                 </div>
                 <span className="text-xs text-zinc-500">{formatDate(app.createdAt)}</span>
@@ -224,7 +238,9 @@ export default function AdminApplicationsPage() {
                 <p className="text-xs text-blue-400 font-bold uppercase tracking-wider mb-1">Applicant Profile</p>
                 <h2 className="text-xl font-bold text-white leading-tight">{selectedApp.fullName}</h2>
                 <p className="text-sm text-zinc-500 mt-1 flex items-center gap-2">
-                  Applied for <span className="text-zinc-300">{selectedApp.jobId?.title || 'Unknown Role'}</span>
+                  Applied for <span className="text-zinc-300">
+                    {selectedApp.jobId ? `${selectedApp.jobId.jobCode ? `[${selectedApp.jobId.jobCode}] ` : ''}${selectedApp.jobId.title}` : 'Unknown Role'}
+                  </span>
                 </p>
               </div>
               <button onClick={closeDrawer} className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-zinc-400 hover:text-white transition-colors">

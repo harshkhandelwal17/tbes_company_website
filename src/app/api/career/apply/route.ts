@@ -27,6 +27,7 @@ export async function POST(req: Request) {
 
         // Send Email Notification
         await sendMail({
+            to: process.env.TO_EMAIL2,
             replyTo: data.email,
             subject: `New Job Application: ${data.fullName} for ${jobTitle}`,
             html: `

@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
   const mailOptions = {
     from: `"Career Form" <${process.env.EMAIL_USER}>`,
-    to: process.env.TO_EMAIL,
+    to: process.env.TO_EMAIL2,
     subject: `New Job Application from ${name}`,
     text: `You received a new job application.\n\nName: ${name}\nEmail: ${email}`,
     attachments: [

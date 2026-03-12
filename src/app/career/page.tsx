@@ -69,29 +69,34 @@ const ApplicationModal = ({ job, onClose }: { job: Job; onClose: () => void }) =
 
       const { presignedUrl, publicUrl } = await res.json();
 
-      // 2. Upload directly to R2 using fetch
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => Math.min(prev + 10, 95));
-      }, 300);
+      // 2. Upload directly to R2 using XMLHttpRequest for progress tracking
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = Math.round((event.loaded / event.total) * 100);
+            setUploadProgress(percentComplete);
+          }
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
+          else reject(new Error('R2 Upload failed'));
+        };
+        xhr.onerror = () => reject(new Error('Network error during upload'));
+        xhr.onabort = () => reject(new Error('Upload aborted'));
 
-      const r2Res = await fetch(presignedUrl, {
-        method: 'PUT',
-        body: file,
+        xhr.open('PUT', presignedUrl);
+        xhr.setRequestHeader('Content-Type', file.type || 'application/pdf');
+        xhr.send(file);
       });
 
-      clearInterval(progressInterval);
-
-      if (r2Res.ok) {
-        setFormData(prev => ({ ...prev, resumeUrl: publicUrl }));
-        setUploadProgress(100);
-      } else {
-        alert("Resume upload failed. Please try again.");
-        setUploadProgress(0);
-      }
+      setFormData(prev => ({ ...prev, resumeUrl: publicUrl }));
+      setUploadProgress(100);
       setIsUploading(false);
 
     } catch (error: any) {
       setIsUploading(false);
+      setUploadProgress(0);
       alert(error.message || "Something went wrong during upload.");
     }
   };

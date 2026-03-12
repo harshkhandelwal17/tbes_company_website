@@ -10,6 +10,7 @@ import {
 interface Job {
   _id: string
   title: string
+  jobCode?: string
   department?: string
   location: string
   type: string
@@ -35,6 +36,7 @@ export default function AdminCareerPage() {
 
   const [formData, setFormData] = useState<Omit<Job, '_id' | 'createdAt'>>({
     title: '',
+    jobCode: '',
     department: '',
     location: '',
     type: 'Full-time',
@@ -69,9 +71,14 @@ export default function AdminCareerPage() {
       // Admin should see ALL jobs (active + inactive) — use the public jobs read-all
       const response = await fetch('/api/jobs?all=true')
       if (response.ok) {
-        const data = await response.json()
-        setJobs(data)
-        setFilteredJobs(data)
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const data = await response.json()
+          setJobs(data)
+          setFilteredJobs(data)
+        } else {
+          console.error("Received HTML instead of JSON for /api/jobs");
+        }
       }
     } catch (_error) {
       console.error('Failed to load jobs')
@@ -164,6 +171,7 @@ export default function AdminCareerPage() {
     setEditingId(job._id)
     setFormData({
       title: job.title,
+      jobCode: job.jobCode || '',
       department: job.department || '',
       location: job.location,
       type: job.type,
@@ -182,6 +190,7 @@ export default function AdminCareerPage() {
     setEditingId(null)
     setFormData({
       title: '',
+      jobCode: '',
       department: '',
       location: '',
       type: 'Full-time',
@@ -252,7 +261,9 @@ export default function AdminCareerPage() {
 
                   <div className="flex justify-between items-start mb-4 relative z-10">
                     <div>
-                      <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">{job.title}</h3>
+                      <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">
+                        {job.jobCode ? `[${job.jobCode}] ` : ''}{job.title}
+                      </h3>
                       <p className="text-sm text-zinc-500 mt-1 flex items-center gap-2">
                         <Briefcase size={12} /> {job.department || 'General'}
                       </p>
@@ -352,6 +363,13 @@ export default function AdminCareerPage() {
                   <input type="text" required value={formData.title} onChange={(e) => handleInputChange('title', e.target.value)}
                     className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:bg-zinc-800 transition-all placeholder:text-zinc-600"
                     placeholder="e.g. Senior BIM Engineer"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-zinc-400 uppercase">Job ID / Code <span className="text-zinc-600">(Optional)</span></label>
+                  <input type="text" value={formData.jobCode} onChange={(e) => handleInputChange('jobCode', e.target.value)}
+                    className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:bg-zinc-800 transition-all placeholder:text-zinc-600"
+                    placeholder="e.g. TBES-001"
                   />
                 </div>
                 <div className="space-y-2">

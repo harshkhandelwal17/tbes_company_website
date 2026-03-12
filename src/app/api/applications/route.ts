@@ -10,7 +10,7 @@ export async function GET() {
     try {
         await connectDB();
         const applications = await Application.find()
-            .populate('jobId', 'title')
+            .populate('jobId', 'title jobCode')
             .sort({ createdAt: -1 });
         return NextResponse.json(applications);
     } catch (error) {
