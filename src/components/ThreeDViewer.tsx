@@ -135,7 +135,8 @@ export default function ThreeDViewer({ modelUrl, modelType, className = "h-[500p
     const [cameraTarget, setCameraTarget] = useState<[number, number, number] | null>(null);
     
     // Axis Fix State (0 degrees, -90 degrees, 90 degrees, 180 degrees)
-    const [axisRotationIndex, setAxisRotationIndex] = useState(0);
+    // FIX: Set initial state to 1 (which applies the -90 degree rotation commonly needed for BIM/Revit exports)
+    const [axisRotationIndex, setAxisRotationIndex] = useState(1); 
     const rotations: [number, number, number][] = [
         [0, 0, 0],                            // Default
         [-Math.PI / 2, 0, 0],                 // Fix Z-up to Y-up (Most common for Revit/BIM)
