@@ -89,7 +89,7 @@ const ImageGallery = ({ images, isOpen, onClose, initialIndex = 0 }: { images: s
                <ChevronLeft size={32} />
             </button>
 
-            <div className="relative w-full h-full max-w-7xl">
+            <div className="relative w-full h-full max-w-7xl flex-1 items-center justify-center">
                {images[currentIndex] && (
                   <Image
                      src={images[currentIndex]}
@@ -97,7 +97,8 @@ const ImageGallery = ({ images, isOpen, onClose, initialIndex = 0 }: { images: s
                      fill
                      className="object-contain drop-shadow-2xl"
                      priority
-                     quality={100}
+                     sizes="100vw"
+                     unoptimized
                   />
                )}
             </div>
@@ -117,8 +118,8 @@ const ImageGallery = ({ images, isOpen, onClose, initialIndex = 0 }: { images: s
                   key={idx}
                   onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
                   className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all duration-300 ${idx === currentIndex
-                        ? 'border-blue-500 scale-105 opacity-100 ring-4 ring-blue-500/20'
-                        : 'border-transparent opacity-40 hover:opacity-100'
+                     ? 'border-blue-500 scale-105 opacity-100 ring-4 ring-blue-500/20'
+                     : 'border-transparent opacity-40 hover:opacity-100'
                      }`}
                >
                   {img && <Image src={img} alt="thumb" fill className="object-cover" sizes="64px" />}
@@ -190,6 +191,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
                      fill
                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-110 group-hover:rotate-1"
                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                     unoptimized
                   />
                ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-slate-700 space-y-2">

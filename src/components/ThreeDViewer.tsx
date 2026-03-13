@@ -162,7 +162,7 @@ export default function ThreeDViewer({ modelUrl, modelType, className = "h-[500p
     ];
 
     return (
-        <div className={`${className} bg-[#05080F] rounded-2xl overflow-hidden relative border border-white/10 shadow-2xl group flex flex-col`}>
+        <div className={`${className} bg-gradient-to-b from-[#4b6c8b] to-[#9eaeb9] rounded-2xl overflow-hidden relative border border-white/10 shadow-2xl group flex flex-col`}>
             
             {/* --- TOP TOOLBAR --- */}
             <div className="absolute top-4 left-4 right-4 z-10 flex justify-between items-start pointer-events-none">
@@ -194,7 +194,6 @@ export default function ThreeDViewer({ modelUrl, modelType, className = "h-[500p
             <div className="flex-1 w-full relative cursor-move">
                 <ErrorBoundary>
                     <Canvas shadows dpr={[1, 2]} camera={{ fov: 45, position: [5, 5, 5] }}>
-                        <color attach="background" args={['#0a0f1a']} />
                         
                         <Suspense fallback={<Loader />}>
                             {/* Stage auto-centers the model */}
