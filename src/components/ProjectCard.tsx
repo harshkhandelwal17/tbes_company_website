@@ -122,7 +122,7 @@ const ImageGallery = ({ images, isOpen, onClose, initialIndex = 0 }: { images: s
                      : 'border-transparent opacity-40 hover:opacity-100'
                      }`}
                >
-                  {img && <Image src={img} alt="thumb" fill className="object-cover" sizes="64px" />}
+                  {img && <Image src={img} alt="thumb" fill className="object-cover" sizes="64px" unoptimized />}
                </button>
             ))}
          </div>

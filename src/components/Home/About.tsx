@@ -6,7 +6,6 @@ import { getYearsOfExperience } from '@/lib/companyStats';
 
 const About = () => {
   const companyYears = getYearsOfExperience();
-
   return (
     <section className="relative py-16 lg:py-32 bg-white overflow-hidden">
 

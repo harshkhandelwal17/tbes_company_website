@@ -193,15 +193,32 @@ export default function ThreeDViewer({ modelUrl, modelType, className = "h-[500p
             {/* --- CANVAS AREA --- */}
             <div className="flex-1 w-full relative cursor-move">
                 <ErrorBoundary>
-                    <Canvas shadows dpr={[1, 2]} camera={{ fov: 45, position: [5, 5, 5] }}>
-                        
+                   <Canvas 
+                        shadows 
+                        dpr={[1, 2]} 
+                        camera={{ fov: 45, position: [5, 5, 5] }}
+                        gl={{ 
+                            alpha: true,
+                            antialias: true,
+                            toneMapping: THREE.ACESFilmicToneMapping, // Better color reproduction
+                            toneMappingExposure: 1.2, // Increase overall brightness slightly
+                        }}
+                    >
+                        <ambientLight intensity={0.8} />
+                        <directionalLight 
+                            position={[10, 10, 5]} 
+                            intensity={1.5} 
+                            castShadow 
+                            shadow-mapSize={[1024, 1024]} 
+                        />
                         <Suspense fallback={<Loader />}>
                             {/* Stage auto-centers the model */}
                             <Stage 
-                                environment="city" 
-                                intensity={0.5} 
-                                preset="soft"
+                                environment="studio" 
+                                intensity={0.8} 
+                                preset="rembrandt"
                                 adjustCamera={1.2}
+                                
                             >
                                 <Model 
                                     url={modelUrl} 
