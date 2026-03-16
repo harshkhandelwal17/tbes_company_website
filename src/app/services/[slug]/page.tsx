@@ -9,6 +9,8 @@ import connectDB from '@/lib/mongodb';
 import Service from '@/models/Service';
 import DynamicIcon from '@/components/DynamicIcon';
 
+export const dynamic = 'force-dynamic';
+
 interface ServiceDocument {
     title: string;
     icon: string;

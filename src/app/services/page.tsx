@@ -7,6 +7,8 @@ import DynamicIcon from '@/components/DynamicIcon';
 import connectDB from '@/lib/mongodb';
 import Service from '@/models/Service';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Our Services | TBES Global',
   description: 'Explore our comprehensive BIM, CAD, and engineering solutions tailored for the AEC industry.',
@@ -108,7 +110,7 @@ export default async function ServicesPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
 
                     {/* Floating Icon Badge */}
-                   
+
                   </div>
 
                   {/* Decorative Blob */}

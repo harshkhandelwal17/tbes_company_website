@@ -3,6 +3,8 @@ import connectDB from '@/lib/mongodb';
 import Service from '@/models/Service';
 import { deleteFromR2, extractR2Key } from '@/lib/r2';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
     req: Request,
     { params }: { params: Promise<{ id: string }> }

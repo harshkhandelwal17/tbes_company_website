@@ -8,6 +8,8 @@ import ContactSection from '@/components/Home/ContactSection';
 import connectDB from '@/lib/mongodb';
 import Service from '@/models/Service';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'TBES Global | Leading BIM & CAD Solutions',
   description: 'Transforming construction with precision BIM modeling, CAD drafting, and engineering consultation services.',
