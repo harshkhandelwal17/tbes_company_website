@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Project from '@/models/Project';
 import { uploadToR2, deleteFromR2, extractR2Key } from '@/lib/r2';
+import { verifyAdmin } from '@/lib/auth';
 
 // POST - Create new project
 export async function POST(req: NextRequest) {
   try {
+    const isAdmin = await verifyAdmin();
+    if (!isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
     const formData = await req.formData();
 
     const title = formData.get('title') as string;
@@ -46,6 +50,9 @@ export async function POST(req: NextRequest) {
 // PUT - Update existing project
 export async function PUT(req: NextRequest) {
   try {
+    const isAdmin = await verifyAdmin();
+    if (!isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
     const formData = await req.formData();
     const id = formData.get('id') as string;
     if (!id) return NextResponse.json({ error: 'Project ID required' }, { status: 400 });
@@ -113,6 +120,9 @@ export async function PUT(req: NextRequest) {
 // DELETE - Delete project + cleanup ALL R2 assets (images + 3D model)
 export async function DELETE(req: NextRequest) {
   try {
+    const isAdmin = await verifyAdmin();
+    if (!isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });

@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generatePresignedUploadUrl } from '@/lib/r2';
-import { cookies } from 'next/headers';
+import { verifyAdmin } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
     try {
-        // 1. Auth Check (Basic check for presence of admin-token)
-        const cookieStore = await cookies();
-        const adminToken = cookieStore.get('admin-token');
+        // 1. Auth Check (Actual verification of admin-token)
+        const isAdmin = await verifyAdmin();
 
-        // For user-facing career page, we might allow resume uploads without admin-token
-        // but the 'folder' should be restricted or validated.
         const { filename, contentType, folder } = await req.json();
 
         if (!filename || !contentType || !folder) {
@@ -17,7 +14,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Security: Only allow specific folders for non-admins if needed
-        if (!adminToken && folder !== 'tbes-resumes') {
+        if (!isAdmin && folder !== 'tbes-resumes') {
             return NextResponse.json({ error: 'Unauthorized folder access' }, { status: 401 });
         }
 

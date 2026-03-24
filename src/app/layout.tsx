@@ -26,7 +26,21 @@ export const metadata = {
     locale: 'en_US',
     url: 'https://tbesglobal.com',
     siteName: 'TBES Global',
-  }
+    title: 'TBES Global | Leading BIM & CAD Solutions',
+    description: 'Innovative Building Information Modeling (BIM) solutions and services provider serving architects, engineers, contractors, and consultants globally.',
+    images: [
+      {
+        url: 'https://tbesglobal.com/logo2.png',
+        width: 1200,
+        height: 630,
+        alt: 'TBES Global Logo',
+      },
+    ],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Job from "@/models/Job";
+import { verifyAdmin } from "@/lib/auth";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-  await connectDB();
   const showAll = req.nextUrl.searchParams.get('all') === 'true';
+
+  if (showAll) {
+    const isAdmin = await verifyAdmin();
+    if (!isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  await connectDB();
   // Public: only active jobs. Admin (?all=true): all jobs
   const filter = showAll ? {} : { status: 'active', active: true };
   const jobs = await Job.find(filter).sort({ createdAt: -1 });
@@ -14,6 +21,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const isAdmin = await verifyAdmin();
+  if (!isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   await connectDB();
   const data = await req.json();
 
@@ -28,6 +38,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  const isAdmin = await verifyAdmin();
+  if (!isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   await connectDB();
   const url = new URL(req.url);
   const id = url.searchParams.get("id");
@@ -47,6 +60,9 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const isAdmin = await verifyAdmin();
+  if (!isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   await connectDB();
   const url = new URL(req.url);
   const id = url.searchParams.get("id");

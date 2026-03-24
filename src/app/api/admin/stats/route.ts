@@ -4,11 +4,15 @@ import Job from '@/models/Job';
 import Application from '@/models/Application';
 import Project from '@/models/Project';
 import Contact from '@/models/Contact';
+import { verifyAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
     try {
+        const isAdmin = await verifyAdmin();
+        if (!isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
         await connectDB();
 
         const [jobsCount, applicationsCount, projectsCount, contactsCount] = await Promise.all([

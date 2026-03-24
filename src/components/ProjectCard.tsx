@@ -98,7 +98,6 @@ const ImageGallery = ({ images, isOpen, onClose, initialIndex = 0 }: { images: s
                      className="object-contain drop-shadow-2xl"
                      priority
                      sizes="100vw"
-                     unoptimized
                   />
                )}
             </div>
@@ -122,7 +121,7 @@ const ImageGallery = ({ images, isOpen, onClose, initialIndex = 0 }: { images: s
                      : 'border-transparent opacity-40 hover:opacity-100'
                      }`}
                >
-                  {img && <Image src={img} alt="thumb" fill className="object-cover" sizes="64px" unoptimized />}
+                  {img && <Image src={img} alt="thumb" fill className="object-cover" sizes="64px" />}
                </button>
             ))}
          </div>
@@ -191,7 +190,6 @@ export default function ProjectCard({ project }: ProjectCardProps) {
                      fill
                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-110 group-hover:rotate-1"
                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                     unoptimized
                   />
                ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-slate-700 space-y-2">

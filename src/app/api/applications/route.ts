@@ -3,11 +3,15 @@ import connectDB from '@/lib/mongodb';
 import Application from '@/models/Application';
 import Job from '@/models/Job'; // Keep registered
 import { deleteFromR2, extractR2Key } from '@/lib/r2';
+import { verifyAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
     try {
+        const isAdmin = await verifyAdmin();
+        if (!isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
         await connectDB();
         const applications = await Application.find()
             .populate('jobId', 'title jobCode')
@@ -21,6 +25,9 @@ export async function GET() {
 
 export async function DELETE(req: NextRequest) {
     try {
+        const isAdmin = await verifyAdmin();
+        if (!isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
         await connectDB();
         const { searchParams } = new URL(req.url);
         const id = searchParams.get('id');
@@ -47,6 +54,9 @@ export async function DELETE(req: NextRequest) {
 // Update application status
 export async function PATCH(req: NextRequest) {
     try {
+        const isAdmin = await verifyAdmin();
+        if (!isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
         await connectDB();
         const { id, status } = await req.json();
 
