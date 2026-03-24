@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Project, FilterOptions, FILTER_OPTIONS } from '@/types';
+import { Project, FilterOptions } from '@/types';
 import ProjectCard from '../../components/ProjectCard';
 import { 
   Search, Filter, X, MapPin, Layers, Briefcase, 
@@ -74,14 +74,37 @@ export default function ProjectsPage() {
     if (filters.sow !== 'All') result = result.filter(p => p.sow === filters.sow);
     if (filters.projectType !== 'All') result = result.filter(p => p.projectType === filters.projectType);
     if (filters.area !== 'All') {
-      const [min, max] = filters.area.includes('-') 
-        ? filters.area.split('-').map(Number) 
-        : filters.area === '100000+' ? [100000, Infinity] : [0, Infinity];
+      let min = 0, max = Infinity;
+      if (filters.area.includes('-')) {
+        const parts = filters.area.split('-').map(Number);
+        min = parts[0]; max = parts[1];
+      } else if (filters.area.endsWith('+')) {
+        min = Number(filters.area.replace('+', ''));
+        max = Infinity;
+      }
       result = result.filter(p => p.area >= min && p.area < max);
     }
 
     setFilteredProjects(result);
   }, [projects, filters, searchQuery]);
+
+  // --- Dynamic Filter Options (derived from real project data) ---
+  const dynamicFilterOptions = useMemo(() => {
+    const locationSet = new Set<string>();
+    const projectTypeSet = new Set<string>();
+    projects.forEach(p => {
+      if (p.location) locationSet.add(p.location);
+      if (p.projectType) projectTypeSet.add(p.projectType);
+    });
+    return {
+      locations: Array.from(locationSet).sort(),
+      projectTypes: Array.from(projectTypeSet).sort(),
+      // LOD, SOW, Area remain static as they are predefined values
+      lods: ['300', '350', '400', '450', '500'],
+      sows: ['Architecture 3D modeling', 'MEP modeling', 'Scan to BIM', 'Structural modeling'],
+      areas: ['0-10000', '10000-20000', '20000-30000', '30000+'],
+    };
+  }, [projects]);
 
   // --- Stats ---
   const stats = useMemo(() => ({
@@ -89,6 +112,21 @@ export default function ProjectsPage() {
     displayed: filteredProjects.length,
     area: projects.reduce((acc, curr) => acc + (curr.area || 0), 0)
   }), [projects, filteredProjects]);
+
+  // --- Smart area display for stats ---
+  const formatTotalArea = (sqft: number) => {
+    if (sqft === 0) return '0';
+    if (sqft >= 1_000_000) return `${(sqft / 1_000_000).toFixed(1)}M`;
+    if (sqft >= 1_000) return `${(sqft / 1_000).toFixed(1)}k`;
+    return sqft.toLocaleString();
+  };
+
+  const getAreaUnit = (sqft: number) => {
+    if (sqft === 0) return 'Sq.Ft Modeled';
+    if (sqft >= 1_000_000) return 'M Sq.Ft Modeled';
+    if (sqft >= 1_000) return 'k Sq.Ft Modeled';
+    return 'Sq.Ft Modeled';
+  };
 
   // --- Handlers ---
   const handleFilterChange = (key: keyof FilterOptions, value: string) => {
@@ -154,8 +192,8 @@ export default function ProjectsPage() {
               </div>
               <div className="h-10 w-px bg-white/10"></div>
               <div className="text-right">
-                <p className="text-3xl font-bold text-white">{(stats.area / 1000000).toFixed(1)}M</p>
-                <p className="text-xs text-slate-500 uppercase tracking-wider">Sq.Ft Modeled</p>
+                <p className="text-3xl font-bold text-white">{formatTotalArea(stats.area)}</p>
+                <p className="text-xs text-slate-500 uppercase tracking-wider">{getAreaUnit(stats.area)}</p>
               </div>
             </div>
           </div>
@@ -210,7 +248,7 @@ export default function ProjectsPage() {
                           {filters[key] === 'All' && <Check size={14} className="text-blue-500" />}
                         </button>
                         
-                        {FILTER_OPTIONS[`${key}s` as keyof typeof FILTER_OPTIONS]?.map((option) => (
+                        {(dynamicFilterOptions[`${key}s` as keyof typeof dynamicFilterOptions] as string[])?.map((option) => (
                           <button
                             key={option}
                             onClick={() => handleFilterChange(key, option)}
@@ -347,7 +385,7 @@ export default function ProjectsPage() {
                        >
                          All
                        </button>
-                       {FILTER_OPTIONS[`${key}s` as keyof typeof FILTER_OPTIONS]?.map(opt => (
+                       {(dynamicFilterOptions[`${key}s` as keyof typeof dynamicFilterOptions] as string[])?.map(opt => (
                          <button
                            key={opt}
                            onClick={() => handleFilterChange(key, opt)}
