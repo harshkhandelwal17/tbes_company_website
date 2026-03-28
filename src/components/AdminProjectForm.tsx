@@ -12,7 +12,6 @@ interface AdminProjectFormProps {
 interface EnhancedProjectFormData extends Omit<ProjectFormData, 'sow' | 'area' | 'location'> {
   location: string; // Now a free text field
   areaSqm: number;
-  areaSqft: number;
   softwareUsed: string[];
   trades: string[];
   services: string[];
@@ -57,7 +56,6 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
     lod: project?.lod || 300,
     projectType: project?.projectType || 'Office building',
     areaSqm: project?.area || 10000,
-    areaSqft: Math.round((project?.area || 10000) * 10.764), // Convert sqm to sqft
     softwareUsed: [], // You might need to parse this from existing project data
     trades: [], // You might need to parse this from existing project data
     services: [], // You might need to parse this from existing project data
@@ -160,16 +158,6 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
     if (modelInputRef.current) modelInputRef.current.value = '';
   };
 
-  // Convert sqm to sqft
-  const convertSqmToSqft = (sqm: number): number => {
-    return Math.round(sqm * 10.764);
-  };
-
-  // Convert sqft to sqm
-  const convertSqftToSqm = (sqft: number): number => {
-    return Math.round(sqft / 10.764);
-  };
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -179,22 +167,8 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
   };
 
   const handleAreaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    const numValue = parseInt(value) || 0;
-
-    if (name === 'areaSqm') {
-      setFormData(prev => ({
-        ...prev,
-        areaSqm: numValue,
-        areaSqft: convertSqmToSqft(numValue)
-      }));
-    } else if (name === 'areaSqft') {
-      setFormData(prev => ({
-        ...prev,
-        areaSqft: numValue,
-        areaSqm: convertSqftToSqm(numValue)
-      }));
-    }
+    const numValue = parseInt(e.target.value) || 0;
+    setFormData(prev => ({ ...prev, areaSqm: numValue }));
   };
 
   const handleMultiSelectChange = (fieldName: 'softwareUsed' | 'trades' | 'services', value: string) => {
@@ -261,7 +235,7 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
       // Convert back to original format for submission
       const submitData: ProjectFormData = {
         ...formData,
-        area: formData.areaSqm, // Use sqm as primary area value
+        area: formData.areaSqm, // Store area in sq m
         sow: `${formData.trades.join(', ')} | ${formData.services.join(', ')}` // Combine trades and services
       };
 
@@ -402,38 +376,21 @@ export default function AdminProjectForm({ project, onSubmit, onCancel }: AdminP
           </div>
         </div>
 
-        {/* Area - Dual Input */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Area (Square Meters) *
-            </label>
-            <input
-              type="number"
-              name="areaSqm"
-              value={formData.areaSqm}
-              onChange={handleAreaChange}
-              required
-              min="1"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter area in sqm"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Area (Square Feet) *
-            </label>
-            <input
-              type="number"
-              name="areaSqft"
-              value={formData.areaSqft}
-              onChange={handleAreaChange}
-              required
-              min="1"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter area in sqft"
-            />
-          </div>
+        {/* Area - Sq M only */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Area (Square Meters) *
+          </label>
+          <input
+            type="number"
+            name="areaSqm"
+            value={formData.areaSqm}
+            onChange={handleAreaChange}
+            required
+            min="1"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter area in sq m"
+          />
         </div>
 
         {/* Trades */}

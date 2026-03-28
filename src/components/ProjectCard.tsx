@@ -24,8 +24,6 @@ const parseSOW = (sow: string) => {
    return { trades, services };
 };
 
-const convertSqmToSqft = (sqm: number): number => Math.round(sqm * 10.764);
-
 const getSoftwareUsedArray = (softwareUsed: string | null | undefined | string[]): string[] => {
    if (!softwareUsed) return [];
    if (Array.isArray(softwareUsed)) return softwareUsed;
@@ -132,7 +130,6 @@ const ImageGallery = ({ images, isOpen, onClose, initialIndex = 0 }: { images: s
 // --- Main Project Card Component ---
 export default function ProjectCard({ project }: ProjectCardProps) {
    const { trades, services } = parseSOW(project.sow || '');
-   const areaSqft = convertSqmToSqft(project.area || 0);
    const softwareUsedArray = getSoftwareUsedArray(project.softwareUsed);
    const projectImages = getProjectImages(project);
 
@@ -247,7 +244,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
                         <span className="text-[10px] font-bold uppercase tracking-wider">Area</span>
                      </div>
                      <p className="text-sm font-bold text-white truncate">
-                        {project.area ? `${(project.area / 1000).toFixed(1)}k Sq.Ft` : 'N/A'}
+                        {project.area ? `${(project.area / 1000).toFixed(1)}k Sq.M` : 'N/A'}
                      </p>
                   </div>
                </div>
