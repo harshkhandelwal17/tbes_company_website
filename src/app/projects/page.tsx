@@ -122,10 +122,10 @@ export default function ProjectsPage() {
   };
 
   const getAreaUnit = (sqft: number) => {
-    if (sqft === 0) return 'Sq.Ft Modeled';
-    if (sqft >= 1_000_000) return 'M Sq.Ft Modeled';
-    if (sqft >= 1_000) return 'k Sq.Ft Modeled';
-    return 'Sq.Ft Modeled';
+    if (sqft === 0) return 'SQ.M Modeled';
+    if (sqft >= 1_000_000) return 'M SQ.M Modeled';
+    if (sqft >= 1_000) return 'k SQ.M Modeled';
+    return 'SQ.M Modeled';
   };
 
   // --- Handlers ---
