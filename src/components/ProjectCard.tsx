@@ -32,10 +32,12 @@ const getSoftwareUsedArray = (softwareUsed: string | null | undefined | string[]
 };
 
 const getProjectImages = (project: Project): string[] => {
-   const images: string[] = [];
-   if (project.imageUrl) images.push(project.imageUrl);
-   if ((project as any).images && Array.isArray((project as any).images)) images.push(...(project as any).images);
-   return images.filter(img => typeof img === 'string' && img.trim() !== '');
+   const imagesArray = (project as any).images;
+   if (imagesArray && Array.isArray(imagesArray) && imagesArray.length > 0) {
+      return imagesArray.filter((img: any) => typeof img === 'string' && img.trim() !== '');
+   }
+   if (project.imageUrl) return [project.imageUrl];
+   return [];
 };
 
 // --- Image Gallery Modal Component ---
