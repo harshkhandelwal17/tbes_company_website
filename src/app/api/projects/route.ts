@@ -31,6 +31,7 @@ export async function GET() {
                 area: project.area,
                 modelUrl: project.modelUrl,
                 modelType: project.modelType,
+                softwareUsed: project.softwareUsed || '',
                 imageUrl: imageUrls[0] || null, // Main image for card
                 images: imageUrls, // All images for gallery
                 createdAt: project.createdAt,

@@ -42,6 +42,10 @@ const ProjectSchema = new mongoose.Schema(
             type: String,
             required: false,
         },
+        softwareUsed: {
+            type: String, // Storing as comma-separated string
+            required: false,
+        },
     },
     { timestamps: true }
 );

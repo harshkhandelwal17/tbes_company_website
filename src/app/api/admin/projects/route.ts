@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
     const modelUrl = formData.get('modelUrl') as string;
     const modelType = formData.get('modelType') as string;
     const imageUrls = formData.get('imageUrls') as string; // Stringified array from frontend
+    const softwareUsed = formData.get('softwareUsed') as string;
 
     const parsedLod = lodStr ? parseInt(lodStr.replace(/\D/g, '')) : NaN;
     const lod = !isNaN(parsedLod) ? parsedLod : undefined;
@@ -35,6 +36,7 @@ export async function POST(req: NextRequest) {
       imageUrls: imageUrls || '[]', // Already stringified
       modelUrl,
       modelType,
+      softwareUsed,
     });
 
     return NextResponse.json(project);
@@ -67,6 +69,7 @@ export async function PUT(req: NextRequest) {
     const modelUrl = formData.get('modelUrl') as string;
     const modelType = formData.get('modelType') as string;
     const imageUrls = formData.get('imageUrls') as string; // Final stringified array from frontend
+    const softwareUsed = formData.get('softwareUsed') as string;
 
     const parsedLod = lodStr ? parseInt(lodStr.replace(/\D/g, '')) : NaN;
     const lod = !isNaN(parsedLod) ? parsedLod : undefined;
@@ -102,7 +105,7 @@ export async function PUT(req: NextRequest) {
       {
         title, description, location, lod, sow, projectType, area,
         imageUrls: imageUrls || '[]',
-        modelUrl, modelType,
+        modelUrl, modelType, softwareUsed,
       },
       { new: true }
     );
