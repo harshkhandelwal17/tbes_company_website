@@ -71,7 +71,11 @@ export default function ProjectsPage() {
 
     if (filters.location !== 'All') result = result.filter(p => p.location === filters.location);
     if (filters.lod !== 'All') result = result.filter(p => String(p.lod) === filters.lod);
-    if (filters.sow !== 'All') result = result.filter(p => p.sow === filters.sow);
+    if (filters.sow !== 'All') result = result.filter(p => {
+      if (!p.sow) return false;
+      const allItems = p.sow.split(' | ').flatMap((part: string) => part.split(', ').map((s: string) => s.trim()));
+      return allItems.includes(filters.sow);
+    });
     if (filters.projectType !== 'All') result = result.filter(p => p.projectType === filters.projectType);
     if (filters.area !== 'All') {
       let min = 0, max = Infinity;
@@ -99,9 +103,21 @@ export default function ProjectsPage() {
     return {
       locations: Array.from(locationSet).sort(),
       projectTypes: Array.from(projectTypeSet).sort(),
-      // LOD, SOW, Area remain static as they are predefined values
       lods: ['300', '350', '400', '450', '500'],
-      sows: ['Architecture 3D modeling', 'MEP modeling', 'Scan to BIM', 'Structural modeling'],
+      sows: (() => {
+        const sowSet = new Set<string>();
+        projects.forEach(p => {
+          if (p.sow) {
+            p.sow.split(' | ').forEach((part: string) => {
+              part.split(', ').forEach((item: string) => {
+                const t = item.trim();
+                if (t) sowSet.add(t);
+              });
+            });
+          }
+        });
+        return Array.from(sowSet).sort();
+      })(),
       areas: ['0-10000', '10000-20000', '20000-30000', '30000+'],
     };
   }, [projects]);
