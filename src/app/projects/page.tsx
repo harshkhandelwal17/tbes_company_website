@@ -73,8 +73,8 @@ export default function ProjectsPage() {
     if (filters.lod !== 'All') result = result.filter(p => String(p.lod) === filters.lod);
     if (filters.sow !== 'All') result = result.filter(p => {
       if (!p.sow) return false;
-      const allItems = p.sow.split(' | ').flatMap((part: string) => part.split(', ').map((s: string) => s.trim()));
-      return allItems.includes(filters.sow);
+      const allItems = p.sow.split(' | ').flatMap((part: string) => part.split(', ').map((s: string) => s.trim().toLowerCase()));
+      return allItems.includes(filters.sow.toLowerCase());
     });
     if (filters.projectType !== 'All') result = result.filter(p => p.projectType === filters.projectType);
     if (filters.area !== 'All') {
@@ -105,18 +105,18 @@ export default function ProjectsPage() {
       projectTypes: Array.from(projectTypeSet).sort(),
       lods: ['300', '350', '400', '450', '500'],
       sows: (() => {
-        const sowSet = new Set<string>();
+        const sowMap = new Map<string, string>(); // key=lowercase for dedup, value=original
         projects.forEach(p => {
           if (p.sow) {
             p.sow.split(' | ').forEach((part: string) => {
               part.split(', ').forEach((item: string) => {
                 const t = item.trim();
-                if (t) sowSet.add(t);
+                if (t) sowMap.set(t.toLowerCase(), t);
               });
             });
           }
         });
-        return Array.from(sowSet).sort();
+        return Array.from(sowMap.values()).sort();
       })(),
       areas: ['0-10000', '10000-20000', '20000-30000', '30000+'],
     };
