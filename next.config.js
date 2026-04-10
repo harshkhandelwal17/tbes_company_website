@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  generateBuildId: async () => {
+    // Unique ID per deployment prevents stale chunk errors on Hostinger
+    return `build-${Date.now()}`;
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },

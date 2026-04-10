@@ -50,6 +50,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="scroll-smooth">
+      <head>
+        {/* Auto-reload on ChunkLoadError — prevents stale chunk issues after deployment */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          window.addEventListener('error', function(e) {
+            if (e && e.message && e.message.indexOf('ChunkLoadError') !== -1) {
+              window.location.reload();
+            }
+          });
+          window.addEventListener('unhandledrejection', function(e) {
+            if (e && e.reason && e.reason.name === 'ChunkLoadError') {
+              e.preventDefault();
+              window.location.reload();
+            }
+          });
+        ` }} />
+      </head>
       <body className={`${font.className} antialiased text-slate-900 bg-white`}>
         <Layout>
           {children}
