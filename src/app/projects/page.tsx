@@ -206,11 +206,11 @@ export default function ProjectsPage() {
                 <p className="text-3xl font-bold text-white">{stats.total}</p>
                 <p className="text-xs text-slate-500 uppercase tracking-wider">Projects</p>
               </div>
-              <div className="h-10 w-px bg-white/10"></div>
+              {/* <div className="h-10 w-px bg-white/10"></div>
               <div className="text-right">
                 <p className="text-3xl font-bold text-white">{formatTotalArea(stats.area)}</p>
                 <p className="text-xs text-slate-500 uppercase tracking-wider">{getAreaUnit(stats.area)}</p>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
