@@ -1,0 +1,3 @@
+module.exports=[670583,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(125554);a.n(d("[project]/Desktop/tbes-global - Copy/tbes-global/node_modules/next/dist/client/components/builtin/global-error.js <module evaluation>"))},222897,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(125554);a.n(d("[project]/Desktop/tbes-global - Copy/tbes-global/node_modules/next/dist/client/components/builtin/global-error.js"))},966539,a=>{"use strict";a.i(670583);var b=a.i(222897);a.n(b)}];
+
+//# sourceMappingURL=79d6f_next_dist_client_components_builtin_global-error_575a5afc.js.map
