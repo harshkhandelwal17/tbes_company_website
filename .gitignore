@@ -14,7 +14,7 @@
 /coverage
 
 # next.js
-/.next/
+# /.next/   <-- included in git so server doesn't need to build
 /out/
 
 # production
