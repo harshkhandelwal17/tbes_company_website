@@ -87,21 +87,6 @@ const Hero = () => {
               </Link>
             </div>
 
-            {/* Mobile Metrics */}
-            <div className="lg:hidden grid grid-cols-3 gap-3 pt-8 border-t border-white/[0.08]">
-              <div className="flex flex-col">
-                <span className="text-2xl font-bold text-white">{companyYears}+</span>
-                <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Years Exp.</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-2xl font-bold text-white">5M+</span>
-                <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Sq. Ft.</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-2xl font-bold text-white">24/7</span>
-                <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Support</span>
-              </div>
-            </div>
 
           </div>
 
