@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Standalone output: lightweight server bundle, less RAM on Hostinger
+  output: 'standalone',
   generateBuildId: async () => {
     // Unique ID per deployment prevents stale chunk errors on Hostinger
     return `build-${Date.now()}`;
@@ -15,6 +17,9 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '200mb',
     },
+    // Limit parallel build workers — prevents RAM/CPU spike on Hostinger shared hosting
+    workerThreads: false,
+    cpus: 2,
   },
   images: {
     remotePatterns: [
