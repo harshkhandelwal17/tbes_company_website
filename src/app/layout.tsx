@@ -1,6 +1,7 @@
 import './globals.css';
 import { Plus_Jakarta_Sans } from 'next/font/google'; // Updated Font
 import Layout from '@/components/Layout/Layout';
+import MediaGuard from '@/components/MediaGuard';
 
 // "Plus Jakarta Sans" modern aur corporate websites ke liye best hai
 const font = Plus_Jakarta_Sans({
@@ -67,6 +68,7 @@ export default function RootLayout({
         ` }} />
       </head>
       <body className={`${font.className} antialiased text-slate-900 bg-white`}>
+        <MediaGuard />
         <Layout>
           {children}
         </Layout>

@@ -86,7 +86,7 @@ export default async function ServiceDetailPage({
                 {/* Service Image Background */}
                 {service.image && (
                     <div className="absolute inset-0 z-0">
-                        <img src={service.image} alt="" className="w-full h-full object-cover opacity-20" />
+                        <img src={service.image} alt="" className="w-full h-full object-cover opacity-20" draggable={false} style={{ pointerEvents: 'none', userSelect: 'none' }} />
                         <div className="absolute inset-0 bg-gradient-to-b from-[#05080F]/80 via-[#05080F] to-[#05080F]"></div>
                     </div>
                 )}

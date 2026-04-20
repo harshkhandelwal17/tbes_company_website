@@ -69,13 +69,13 @@ const ImageGallery = ({
    if (!isOpen || !images || images.length === 0) return null;
 
    return (
-      <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center animate-in fade-in duration-300">
+      <div className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center animate-in fade-in duration-300">
          {/* Top Bar */}
          <div className="absolute top-0 left-0 right-0 p-4 md:p-6 flex justify-between items-center z-50">
-            <span className="text-white/70 text-sm font-mono tracking-widest uppercase">
+            <span className="text-slate-500 text-sm font-mono tracking-widest uppercase">
                Gallery • {currentIndex + 1} / {images.length}
             </span>
-            <button onClick={onClose} className="p-3 rounded-full bg-white/10 hover:bg-red-500/20 hover:text-red-400 text-white transition-all">
+            <button onClick={onClose} className="p-3 rounded-full bg-slate-100 hover:bg-red-50 hover:text-red-500 text-slate-600 transition-all">
                <X size={24} />
             </button>
          </div>
@@ -84,29 +84,30 @@ const ImageGallery = ({
          <div className="relative w-full h-[80vh] flex items-center justify-center px-4 md:px-16">
             <button
                onClick={(e) => { e.stopPropagation(); prevImage(); }}
-               className="absolute left-4 z-50 p-4 rounded-full bg-white/5 hover:bg-blue-600 text-white transition-all hidden md:flex hover:scale-110 active:scale-95"
+               className="absolute left-4 z-50 p-4 rounded-full bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-600 transition-all hidden md:flex hover:scale-110 active:scale-95"
             >
                <ChevronLeft size={32} />
             </button>
-            <div className="relative w-full h-full max-w-7xl">
+            <div className="relative w-full h-full max-w-7xl media-no-save" onContextMenu={e => e.preventDefault()}>
                {images[currentIndex] && (
-                  <Image src={images[currentIndex]} alt="Project" fill className="object-contain drop-shadow-2xl" priority sizes="100vw" />
+                  <Image src={images[currentIndex]} alt="Project" fill className="object-contain" priority sizes="100vw" draggable={false} />
                )}
             </div>
             <button
                onClick={(e) => { e.stopPropagation(); nextImage(); }}
-               className="absolute right-4 z-50 p-4 rounded-full bg-white/5 hover:bg-blue-600 text-white transition-all hidden md:flex hover:scale-110 active:scale-95"
+               className="absolute right-4 z-50 p-4 rounded-full bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-600 transition-all hidden md:flex hover:scale-110 active:scale-95"
             >
                <ChevronRight size={32} />
             </button>
          </div>
 
          {/* Thumbnails */}
-         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 overflow-x-auto max-w-[90vw] p-3 bg-black/60 rounded-2xl border border-white/10 backdrop-blur-md">
+         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 overflow-x-auto max-w-[90vw] p-3 bg-slate-100 rounded-2xl border border-slate-200">
             {images.map((img, idx) => (
                <button key={idx} onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
+                  onContextMenu={e => e.preventDefault()}
                   className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all duration-300 ${idx === currentIndex ? 'border-blue-500 scale-105 ring-4 ring-blue-500/20' : 'border-transparent opacity-40 hover:opacity-100'}`}>
-                  {img && <Image src={img} alt="thumb" fill className="object-cover" sizes="64px" />}
+                  {img && <Image src={img} alt="thumb" fill className="object-cover pointer-events-none" sizes="64px" draggable={false} />}
                </button>
             ))}
          </div>
@@ -276,8 +277,9 @@ export default function ProjectCard({ project }: ProjectCardProps) {
                 1. IMAGE SECTION — click = gallery
             ========================================= */}
             <div
-               className="relative aspect-[4/3] w-full overflow-hidden bg-slate-900 cursor-pointer"
+               className="relative aspect-[4/3] w-full overflow-hidden bg-slate-900 cursor-pointer media-no-save"
                onClick={(e) => openGallery(e)}
+               onContextMenu={e => e.preventDefault()}
             >
                {/* 3D Badge */}
                {has3DModel && (

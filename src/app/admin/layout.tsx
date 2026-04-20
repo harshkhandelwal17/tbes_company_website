@@ -6,7 +6,8 @@ import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Briefcase, FolderKanban, MessageSquare,
   FileText, LogOut, Menu, X, Search,
-  ChevronRight, ShieldCheck, Layers, Star
+  ChevronRight, ShieldCheck, Layers, Star, Users, Clock, AlertTriangle,
+  Settings, CalendarDays
 } from 'lucide-react';
 
 export default function AdminLayout({
@@ -28,6 +29,12 @@ export default function AdminLayout({
     { name: 'Inquiries', href: '/admin/contacts' },
     { name: 'Applications', href: '/admin/applications' },
     { name: 'Reviews', href: '/admin/reviews' },
+    // HR & Attendance — temporarily hidden
+    // { name: 'Employees', href: '/admin/employees' },
+    // { name: 'Attendance', href: '/admin/attendance' },
+    // { name: 'Corrections', href: '/admin/attendance/corrections' },
+    // { name: 'Att. Settings', href: '/admin/attendance/settings' },
+    // { name: 'Holidays', href: '/admin/attendance/holidays' },
   ];
 
   const searchResults = searchQuery.trim()
@@ -69,13 +76,24 @@ export default function AdminLayout({
       label: "Management",
       items: [
         { name: 'Jobs & Career', href: '/admin/career', icon: Briefcase },
-        { name: 'Services', href: '/admin/services', icon: Layers }, // Added Services link
+        { name: 'Services', href: '/admin/services', icon: Layers },
         { name: 'Projects', href: '/admin/projects', icon: FolderKanban },
         { name: 'Inquiries', href: '/admin/contacts', icon: MessageSquare },
         { name: 'Reviews', href: '/admin/reviews', icon: Star },
         { name: 'Applications', href: '/admin/applications', icon: FileText },
       ]
-    }
+    },
+    // HR & Attendance — temporarily hidden
+    // {
+    //   label: "HR & Attendance",
+    //   items: [
+    //     { name: 'Employees', href: '/admin/employees', icon: Users },
+    //     { name: 'Attendance', href: '/admin/attendance', icon: Clock },
+    //     { name: 'Corrections', href: '/admin/attendance/corrections', icon: AlertTriangle },
+    //     { name: 'Att. Settings', href: '/admin/attendance/settings', icon: Settings },
+    //     { name: 'Holidays', href: '/admin/attendance/holidays', icon: CalendarDays },
+    //   ]
+    // }
   ];
 
   return (

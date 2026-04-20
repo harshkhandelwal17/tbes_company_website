@@ -117,3 +117,30 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* =====================================================
+   MEDIA PROTECTION
+   Prevent drag, copy & right-click save on images/3D
+   ===================================================== */
+img {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Transparent shield overlay over protected media containers */
+.media-no-save {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none; /* iOS long-press menu */
+}
+
+.media-no-save img,
+.media-no-save canvas {
+  pointer-events: none;   /* right-click falls through to parent's onContextMenu handler */
+  -webkit-user-drag: none;
+  user-drag: none;
+}

@@ -10,7 +10,7 @@ interface LayoutProps {
 
 const Layout = ({ children }: LayoutProps) => {
   const pathname = usePathname();
-  const isAdminAttributes = pathname?.startsWith('/admin');
+  const isAdminAttributes = pathname?.startsWith('/admin') || pathname?.startsWith('/employee');
 
   if (isAdminAttributes) {
     return <main>{children}</main>;

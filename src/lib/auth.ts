@@ -9,6 +9,8 @@ if (!SECRET_KEY) {
 
 const key = new TextEncoder().encode(SECRET_KEY);
 
+// ─── Employee token uses same secret but different cookie name ───────────────
+
 export async function signToken(payload: any) {
     return await new SignJWT(payload)
         .setProtectedHeader({ alg: 'HS256' })
@@ -34,6 +36,33 @@ export async function verifyAdmin() {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get('admin-token')?.value;
+
+        if (!token) return null;
+
+        return await verifyToken(token);
+    } catch (error) {
+        return null;
+    }
+}
+
+// ─── Employee Auth Helpers ────────────────────────────────────────────────────
+
+export async function signEmployeeToken(payload: any) {
+    return await new SignJWT(payload)
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime('12h')
+        .sign(key);
+}
+
+/**
+ * Verify employee token from 'employee-token' cookie.
+ * Returns payload (includes id, employeeId, name, email, role) or null.
+ */
+export async function verifyEmployee() {
+    try {
+        const cookieStore = await cookies();
+        const token = cookieStore.get('employee-token')?.value;
 
         if (!token) return null;
 
