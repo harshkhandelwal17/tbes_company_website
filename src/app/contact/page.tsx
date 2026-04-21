@@ -4,8 +4,19 @@ import { useState } from 'react';
 import {
   Mail, Phone, MapPin,
   CheckCircle2, ArrowRight,
-  Globe2, MessageSquare, Loader2
+  Globe2, MessageSquare, Loader2,
+  Box, GitMerge, ScanLine, Monitor, PenTool, GraduationCap, Check
 } from 'lucide-react';
+
+const SERVICE_CONFIG = [
+  { label: 'General Inquiry',         icon: MessageSquare, color: 'text-slate-400',  bg: 'bg-slate-500/10'  },
+  { label: 'BIM 3D Modeling',         icon: Box,           color: 'text-blue-400',   bg: 'bg-blue-500/10'   },
+  { label: 'MEPF Clash Coordination', icon: GitMerge,      color: 'text-orange-400', bg: 'bg-orange-500/10' },
+  { label: 'Scan to BIM',             icon: ScanLine,      color: 'text-cyan-400',   bg: 'bg-cyan-500/10'   },
+  { label: '3D Rendering',            icon: Monitor,       color: 'text-purple-400', bg: 'bg-purple-500/10' },
+  { label: 'CAD Services',            icon: PenTool,       color: 'text-green-400',  bg: 'bg-green-500/10'  },
+  { label: 'Training Inquiry',        icon: GraduationCap, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
+] as const;
 
 export default function ContactPage() {
   const [form, setForm] = useState({
@@ -18,16 +29,6 @@ export default function ContactPage() {
   });
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [focusedField, setFocusedField] = useState<string | null>(null);
-
-  const serviceOptions = [
-    'General Inquiry',
-    'BIM 3D Modeling',
-    'MEPF Clash Coordination',
-    'Scan to BIM',
-    '3D Rendering',
-    'CAD Services',
-    'Training Inquiry'
-  ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -189,23 +190,32 @@ export default function ContactPage() {
 
                   <div className="space-y-2 w-full">
                     <label className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-colors ${focusedField === 'service' ? 'text-blue-400' : 'text-slate-500'}`}>
-                      I'm Interested In <span className="text-slate-600 normal-case font-normal">(select all that apply)</span>
+                      I'm Interested In
+                      <span className="ml-1.5 text-slate-600 normal-case font-normal text-[10px]">— select all that apply</span>
                     </label>
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      {serviceOptions.map(opt => {
-                        const selected = form.serviceInterest.includes(opt);
+                    <div className="grid grid-cols-2 gap-2 pt-0.5">
+                      {SERVICE_CONFIG.map(({ label, icon: Icon, color, bg }) => {
+                        const selected = form.serviceInterest.includes(label);
                         return (
                           <button
-                            key={opt}
+                            key={label}
                             type="button"
-                            onClick={() => toggleService(opt)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all select-none ${
+                            onClick={() => toggleService(label)}
+                            className={`relative flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all ${
                               selected
-                                ? 'bg-blue-600 border-blue-500 text-white shadow-sm shadow-blue-900/40'
-                                : 'bg-white/[0.03] border-white/10 text-slate-400 hover:border-blue-500/40 hover:text-slate-200'
+                                ? 'border-blue-500/50 bg-blue-500/[0.08] text-white'
+                                : 'border-white/[0.08] bg-white/[0.02] text-slate-400 hover:border-white/20 hover:bg-white/[0.04] hover:text-slate-200'
                             }`}
                           >
-                            {selected && <span className="mr-1">✓</span>}{opt}
+                            <div className={`shrink-0 w-7 h-7 rounded-lg flex items-center justify-center ${bg}`}>
+                              <Icon size={14} className={color} />
+                            </div>
+                            <span className="text-xs font-semibold leading-tight">{label}</span>
+                            {selected && (
+                              <div className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-blue-500 rounded-full flex items-center justify-center">
+                                <Check size={9} className="text-white" />
+                              </div>
+                            )}
                           </button>
                         );
                       })}
