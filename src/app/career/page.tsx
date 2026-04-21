@@ -4,8 +4,122 @@ import { useState, useEffect } from 'react';
 import {
   MapPin, Clock, Briefcase, Users, Award, Target,
   ArrowRight, Sparkles, Building2, Search, Zap,
-  ChevronRight, IndianRupee, Send, X, FileText, CheckCircle2, UploadCloud
+  ChevronRight, IndianRupee, Send, X, FileText, CheckCircle2, UploadCloud,
+  BookOpen, Image as ImageIcon, Paperclip, Trash2
 } from 'lucide-react';
+
+// Helper: format experience string
+function formatExperience(exp?: string): string {
+  if (!exp) return 'Not specified';
+  // If already contains 'year' (case-insensitive), return as-is
+  if (/year/i.test(exp)) return exp;
+  // If purely numeric, append " Years"
+  if (/^\d+$/.test(exp.trim())) return `${exp.trim()} Years`;
+  // e.g. "5+", "3-5" — append " Years"
+  if (/^[\d+\-–]+$/.test(exp.trim())) return `${exp.trim()} Years`;
+  return exp;
+}
+
+// --- JOB DESCRIPTION MODAL ---
+const JobDescriptionModal = ({ job, onClose, onApply }: { job: Job; onClose: () => void; onApply: () => void }) => {
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300" onClick={onClose}>
+      <div
+        className="bg-[#0B0F19] border border-white/10 rounded-[2rem] w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-300"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="p-6 border-b border-white/10 flex justify-between items-start sticky top-0 bg-[#0B0F19] rounded-t-[2rem] z-10">
+          <div>
+            <span className="text-blue-400 font-bold text-[10px] uppercase tracking-widest mb-1 block">Full Job Description</span>
+            <h2 className="text-2xl font-bold text-white leading-tight">{job.title}</h2>
+            <div className="flex flex-wrap items-center gap-3 mt-2 text-slate-400 text-xs">
+              <span className="flex items-center gap-1"><MapPin size={10} className="text-blue-400" /> {job.location}</span>
+              <span className="flex items-center gap-1"><Clock size={10} className="text-purple-400" /> {job.type}</span>
+              {job.experience && <span className="flex items-center gap-1"><Award size={10} className="text-orange-400" /> {formatExperience(job.experience)}</span>}
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-colors">
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+
+          {/* Description */}
+          <div>
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
+              <BookOpen size={14} className="text-blue-400" /> About the Role
+            </h3>
+            <p className="text-slate-300 text-sm leading-7 whitespace-pre-wrap">{job.description}</p>
+          </div>
+
+          {/* Responsibilities */}
+          {job.responsibilities && job.responsibilities.length > 0 && (
+            <div>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
+                <FileText size={14} className="text-green-400" /> Responsibilities
+              </h3>
+              <ul className="space-y-2">
+                {job.responsibilities.map((r, i) => (
+                  <li key={i} className="flex items-start gap-2 text-slate-300 text-sm">
+                    <span className="text-green-400 mt-1 shrink-0">✓</span>
+                    <span>{r}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Requirements */}
+          {job.requirements && job.requirements.length > 0 && (
+            <div>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
+                <Award size={14} className="text-orange-400" /> Requirements
+              </h3>
+              <ul className="space-y-2">
+                {job.requirements.map((r, i) => (
+                  <li key={i} className="flex items-start gap-2 text-slate-300 text-sm">
+                    <span className="text-orange-400 mt-1 shrink-0">•</span>
+                    <span>{r}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Qualifications */}
+          {job.qualifications && (
+            <div>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
+                <Briefcase size={14} className="text-purple-400" /> Qualifications
+              </h3>
+              <p className="text-slate-300 text-sm leading-7">{job.qualifications}</p>
+            </div>
+          )}
+
+        </div>
+
+        {/* Footer */}
+        <div className="p-6 border-t border-white/10 sticky bottom-0 bg-[#0B0F19] rounded-b-[2rem]">
+          <button
+            onClick={() => { onClose(); onApply(); }}
+            className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+          >
+            Apply for this Position <ArrowRight size={18} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 interface Job {
   _id: string;
@@ -31,12 +145,18 @@ const ApplicationModal = ({ job, onClose }: { job: Job; onClose: () => void }) =
     email: '',
     phone: '',
     coverLetter: '',
-    resumeUrl: ''
+    resumeUrl: '',
+    coverPhotoUrl: '',
+    additionalDocuments: [] as string[],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [photoProgress, setPhotoProgress] = useState(0);
+  const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+  const [docProgress, setDocProgress] = useState(0);
 
   const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -99,6 +219,68 @@ const ApplicationModal = ({ job, onClose }: { job: Job; onClose: () => void }) =
       setUploadProgress(0);
       alert(error.message || "Something went wrong during upload.");
     }
+  };
+
+  // Cover photo upload handler
+  const handleCoverPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { alert('Photo size should be less than 5MB'); return; }
+    setIsUploadingPhoto(true); setPhotoProgress(0);
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: file.name, contentType: file.type, folder: 'tbes-cover-photos' }) });
+      if (!res.ok) throw new Error((await res.json()).error || 'Upload failed');
+      const { presignedUrl, publicUrl } = await res.json();
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.upload.onprogress = (ev) => { if (ev.lengthComputable) setPhotoProgress(Math.round((ev.loaded / ev.total) * 100)); };
+        xhr.onload = () => xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error('Upload failed'));
+        xhr.onerror = () => reject(new Error('Network error'));
+        xhr.open('PUT', presignedUrl);
+        xhr.setRequestHeader('Content-Type', file.type);
+        xhr.send(file);
+      });
+      setFormData(prev => ({ ...prev, coverPhotoUrl: publicUrl }));
+      setPhotoProgress(100);
+    } catch (err: any) { alert(err.message || 'Photo upload failed'); }
+    finally { setIsUploadingPhoto(false); }
+  };
+
+  // Additional documents upload handler
+  const handleDocUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    if (formData.additionalDocuments.length + files.length > 5) { alert('Max 5 additional documents allowed'); return; }
+    setIsUploadingDoc(true); setDocProgress(0);
+    try {
+      const uploaded: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.size > 10 * 1024 * 1024) { alert(`${file.name} exceeds 10MB limit`); continue; }
+        const res = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename: file.name, contentType: file.type || 'application/octet-stream', folder: 'tbes-supporting-docs' }) });
+        if (!res.ok) throw new Error((await res.json()).error || 'Upload failed');
+        const { presignedUrl, publicUrl } = await res.json();
+        await new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.upload.onprogress = (ev) => { if (ev.lengthComputable) setDocProgress(Math.round(((i / files.length) + (ev.loaded / ev.total) / files.length) * 100)); };
+          xhr.onload = () => xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error('Upload failed'));
+          xhr.onerror = () => reject(new Error('Network error'));
+          xhr.open('PUT', presignedUrl);
+          xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+          xhr.send(file);
+        });
+        uploaded.push(publicUrl);
+      }
+      setFormData(prev => ({ ...prev, additionalDocuments: [...prev.additionalDocuments, ...uploaded] }));
+      setDocProgress(100);
+    } catch (err: any) { alert(err.message || 'Document upload failed'); }
+    finally { setIsUploadingDoc(false); e.target.value = ''; }
+  };
+
+  const removeAdditionalDoc = (index: number) => {
+    setFormData(prev => ({ ...prev, additionalDocuments: prev.additionalDocuments.filter((_, i) => i !== index) }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -254,6 +436,100 @@ const ApplicationModal = ({ job, onClose }: { job: Job; onClose: () => void }) =
                 </div>
               </div>
 
+              {/* Cover Photo Upload */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-slate-400">Cover Photo (Optional)
+                  <span className="ml-2 text-slate-600">.jpg, .png (Max 5MB)</span>
+                </label>
+                <input type="file" id="cover-photo-upload" className="hidden" accept="image/*" onChange={handleCoverPhotoUpload} disabled={isUploadingPhoto} />
+                <div
+                  onClick={() => !isUploadingPhoto && document.getElementById('cover-photo-upload')?.click()}
+                  className={`group border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all ${
+                    formData.coverPhotoUrl ? 'border-green-500/30 bg-green-500/5'
+                    : isUploadingPhoto ? 'border-blue-500/30 bg-blue-500/5 cursor-wait'
+                    : 'border-white/10 hover:border-purple-500/50 hover:bg-purple-500/5'
+                  }`}
+                >
+                  {isUploadingPhoto ? (
+                    <div className="flex flex-col items-center gap-2 text-blue-400">
+                      <div className="p-2 bg-blue-500/20 rounded-full animate-pulse"><ImageIcon size={20} /></div>
+                      <p className="font-bold text-sm text-white">Uploading Photo...</p>
+                      <div className="w-28 bg-white/10 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-blue-500 h-full transition-all" style={{ width: `${photoProgress}%` }} />
+                      </div>
+                    </div>
+                  ) : formData.coverPhotoUrl ? (
+                    <div className="flex items-center justify-center gap-3 text-green-400">
+                      <div className="p-2 bg-green-500/20 rounded-full"><CheckCircle2 size={20} /></div>
+                      <div className="text-left">
+                        <p className="font-bold text-sm">Photo Uploaded</p>
+                        <button type="button" onClick={e => { e.stopPropagation(); setFormData(p => ({ ...p, coverPhotoUrl: '' })); }} className="text-xs text-red-400 hover:underline">Remove</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 text-slate-400 group-hover:text-purple-400">
+                      <div className="p-2 bg-white/5 rounded-full group-hover:bg-purple-500/20 transition-colors"><ImageIcon size={20} /></div>
+                      <p className="text-sm font-bold text-white group-hover:text-purple-300">Click to Upload Cover Photo</p>
+                      <p className="text-xs text-slate-500">JPG, PNG (Max 5MB)</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Additional Supporting Documents */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-slate-400">Supporting Documents (Optional)
+                  <span className="ml-2 text-slate-600">Portfolio, Certificates, etc. (Max 5 files, 10MB each)</span>
+                </label>
+                <input type="file" id="docs-upload" className="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip" multiple onChange={handleDocUpload} disabled={isUploadingDoc} />
+
+                {/* Uploaded docs list */}
+                {formData.additionalDocuments.length > 0 && (
+                  <div className="space-y-2 mb-2">
+                    {formData.additionalDocuments.map((url, idx) => {
+                      const name = url.split('/').pop()?.split('?')[0] || `Document ${idx + 1}`;
+                      return (
+                        <div key={idx} className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/[0.03] border border-white/10">
+                          <div className="flex items-center gap-2 text-slate-300 text-xs">
+                            <Paperclip size={12} className="text-blue-400" />
+                            <span className="truncate max-w-[200px]">{name}</span>
+                          </div>
+                          <button type="button" onClick={() => removeAdditionalDoc(idx)} className="text-red-400 hover:text-red-300 transition-colors">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {formData.additionalDocuments.length < 5 && (
+                  <div
+                    onClick={() => !isUploadingDoc && document.getElementById('docs-upload')?.click()}
+                    className={`group border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all ${
+                      isUploadingDoc ? 'border-blue-500/30 bg-blue-500/5 cursor-wait'
+                      : 'border-white/10 hover:border-blue-500/50 hover:bg-blue-500/5'
+                    }`}
+                  >
+                    {isUploadingDoc ? (
+                      <div className="flex flex-col items-center gap-2 text-blue-400">
+                        <div className="p-2 bg-blue-500/20 rounded-full animate-pulse"><UploadCloud size={18} /></div>
+                        <p className="font-bold text-sm text-white">Uploading...</p>
+                        <div className="w-28 bg-white/10 h-1.5 rounded-full overflow-hidden">
+                          <div className="bg-blue-500 h-full transition-all" style={{ width: `${docProgress}%` }} />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center gap-3 text-slate-400 group-hover:text-blue-400">
+                        <Paperclip size={16} />
+                        <span className="text-sm font-bold text-white group-hover:text-blue-300">Add Supporting Documents</span>
+                        <span className="text-xs text-slate-500">({formData.additionalDocuments.length}/5)</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-slate-400">Cover Letter (Optional)</label>
                 <textarea rows={3} placeholder="Tell us why you're a great fit..."
@@ -282,6 +558,7 @@ const CareerPage = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [descJob, setDescJob] = useState<Job | null>(null);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -322,7 +599,7 @@ const CareerPage = () => {
 
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight leading-[1.1]">
             Build the Future <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">With TBES Global.</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">With TBES Global</span>
           </h1>
 
           <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed font-light mb-10">
@@ -417,7 +694,7 @@ const CareerPage = () => {
                     <div className="bg-white/[0.03] p-3 rounded-xl border border-white/5">
                       <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Experience</p>
                       <p className="text-sm text-white font-bold flex items-center gap-1">
-                        <Award size={14} className="text-orange-400" /> {job.experience || 'Not specified'}
+                        <Award size={14} className="text-orange-400" /> {formatExperience(job.experience)}
                       </p>
                     </div>
                     <div className="bg-white/[0.03] p-3 rounded-xl border border-white/5">
@@ -429,7 +706,7 @@ const CareerPage = () => {
                   </div>
 
                   {/* Description Preview */}
-                  <div className="relative mb-6">
+                  <div className="relative mb-4">
                     <p className="text-slate-400 text-sm line-clamp-3 leading-relaxed">
                       {job.description}
                     </p>
@@ -437,7 +714,13 @@ const CareerPage = () => {
                   </div>
 
                   {/* Action */}
-                  <div className="mt-auto">
+                  <div className="mt-auto space-y-3">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setDescJob(job); }}
+                      className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 font-semibold text-sm hover:bg-blue-500/10 hover:border-blue-500/30 hover:text-blue-300 transition-colors flex items-center justify-center gap-2 active:scale-95"
+                    >
+                      <BookOpen size={14} /> View Full Job Description
+                    </button>
                     <button
                       onClick={() => setSelectedJob(job)}
                       className="w-full py-3 rounded-xl bg-white text-black font-bold text-sm hover:bg-blue-500 hover:text-white transition-colors flex items-center justify-center gap-2 active:scale-95"
@@ -496,11 +779,20 @@ const CareerPage = () => {
         </div>
       </section>
 
-      {/* Modal */}
+      {/* Application Modal */}
       {selectedJob && (
         <ApplicationModal
           job={selectedJob}
           onClose={() => setSelectedJob(null)}
+        />
+      )}
+
+      {/* Job Description Modal */}
+      {descJob && (
+        <JobDescriptionModal
+          job={descJob}
+          onClose={() => setDescJob(null)}
+          onApply={() => { setSelectedJob(descJob); setDescJob(null); }}
         />
       )}
     </div>

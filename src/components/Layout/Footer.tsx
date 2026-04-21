@@ -62,8 +62,7 @@ const Footer = () => {
                 />
               </div>
               <span className="text-2xl font-black tracking-tight uppercase">
-                TBES <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">GLOBAL</span>
-              </span>
+                TBES GLOBAL</span>
             </Link>
 
             <p className="text-slate-400 text-sm leading-relaxed max-w-sm font-light">

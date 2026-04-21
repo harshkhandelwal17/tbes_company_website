@@ -57,7 +57,7 @@ const AboutPage = () => {
                 <span className="text-blue-600 font-bold text-xs uppercase tracking-widest">Who We Are</span>
               </div>
               <h3 className="text-3xl lg:text-4xl font-bold text-slate-900 leading-tight">
-                An Innovative BIM <br className="hidden lg:block" /> Solutions Provider.
+                An Innovative BIM <br className="hidden lg:block" /> Solutions Provider
               </h3>
               <p className="text-slate-600 text-base leading-relaxed">
                 Established in 2018 in Eastern India, TBES Global has rapidly evolved into a global service provider. We specialize in Building Information Modeling (BIM) for architects, contractors, and consultants worldwide.

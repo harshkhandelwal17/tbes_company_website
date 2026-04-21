@@ -37,6 +37,10 @@ export async function POST(req: Request) {
                 <p><strong>Phone:</strong> ${data.phone || 'N/A'}</p>
                 <p><strong>Applying For:</strong> ${jobTitle}</p>
                 <p><strong>Resume:</strong> <a href="${data.resumeUrl}" target="_blank">View Resume</a></p>
+                ${data.coverPhotoUrl ? `<p><strong>Cover Photo:</strong> <a href="${data.coverPhotoUrl}" target="_blank">View Photo</a></p>` : ''}
+                ${data.additionalDocuments && data.additionalDocuments.length > 0
+                    ? `<br/><h3>Additional Documents (${data.additionalDocuments.length}):</h3><ul>${data.additionalDocuments.map((url: string, i: number) => `<li><a href="${url}" target="_blank">Document ${i + 1}</a></li>`).join('')}</ul>`
+                    : ''}
                 ${data.coverLetter ? `<br/><h3>Cover Letter:</h3><p>${data.coverLetter.replace(/\n/g, '<br/>')}</p>` : ''}
                 <br/>
                 <p><small>Application ID: ${application._id}</small></p>

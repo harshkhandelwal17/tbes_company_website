@@ -220,8 +220,12 @@ export default function ContactsPage() {
               </div>
 
               <div className="space-y-2 mb-4">
-                <div className="inline-flex items-center px-2.5 py-1 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-zinc-400">
-                  {contact.serviceInterest}
+                <div className="flex flex-wrap gap-1.5">
+                  {contact.serviceInterest.split(',').map(s => s.trim()).filter(Boolean).map(s => (
+                    <span key={s} className="inline-flex items-center px-2.5 py-1 rounded-md bg-blue-500/10 border border-blue-500/20 text-[10px] font-bold text-blue-400 uppercase tracking-wide">
+                      {s}
+                    </span>
+                  ))}
                 </div>
                 <p className="text-sm font-medium text-white truncate">{contact.subject}</p>
                 <p className="text-xs text-zinc-500 line-clamp-2 leading-relaxed">
@@ -284,7 +288,13 @@ export default function ContactsPage() {
                   </div>
                   <div>
                     <h3 className="text-white font-bold">{selectedContact.name}</h3>
-                    <p className="text-xs text-zinc-500">Service: <span className="text-blue-400">{selectedContact.serviceInterest}</span></p>
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {selectedContact.serviceInterest.split(',').map(s => s.trim()).filter(Boolean).map(s => (
+                        <span key={s} className="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-500/10 border border-blue-500/20 text-[10px] font-bold text-blue-400 uppercase tracking-wide">
+                          {s}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
 

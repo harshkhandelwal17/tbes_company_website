@@ -56,7 +56,7 @@ const Hero = () => {
               </span>
               
               <span className="block text-zinc-400 text-3xl sm:text-4xl lg:text-[3rem] mt-2 font-bold tracking-normal">
-                of construction industry.
+                of construction industry
               </span>
             </h1>
 
@@ -118,7 +118,7 @@ const Hero = () => {
                  </div>
                  <div>
                    <p className="text-xs text-zinc-400 font-medium">Architecture,Structure and MEPF </p>
-                   <p className="text-sm font-bold text-white">Zero Clashes</p>
+                   <p className="text-sm font-bold text-white">Clash Free Modeling</p>
                  </div>
                </div>
             </div>

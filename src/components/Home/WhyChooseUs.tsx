@@ -54,7 +54,7 @@ const WhyChooseUs = () => {
             <h2 className="text-3xl lg:text-5xl font-bold leading-tight tracking-tight text-slate-50">
               The Standard of <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
-                BIM Excellence.
+                BIM Excellence
               </span>
             </h2>
 

@@ -58,7 +58,7 @@ const About = () => {
 
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 leading-[1.2]">
                 We Bridge the Gap Between <br className="hidden sm:block" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Design & Construction.</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Design & Construction</span>
               </h2>
 
               <p className="text-slate-600 text-base sm:text-lg leading-relaxed">

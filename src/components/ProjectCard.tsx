@@ -202,7 +202,7 @@ const ProjectDetailModal = ({ project, isOpen, onClose }: { project: Project; is
                      <div className="space-y-3">
                         {trades.length > 0 && (
                            <div>
-                              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">Trades</p>
+                              
                               <div className="flex flex-wrap gap-2">
                                  {trades.map((t, i) => (
                                     <span key={i} className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-300 text-xs font-medium border border-emerald-500/20">{t}</span>

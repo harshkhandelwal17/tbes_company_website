@@ -13,23 +13,33 @@ export default function ContactPage() {
     email: '',
     phone: '',
     company: '',
-    serviceInterest: 'General Inquiry',
+    serviceInterest: [] as string[],
     message: ''
   });
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const serviceOptions = [
-    'BIM Modeling',
-    'MEP Coordination',
+    'General Inquiry',
+    'BIM 3D Modeling',
+    'MEPF Clash Coordination',
     'Scan to BIM',
     '3D Rendering',
     'CAD Services',
-    'General Inquiry'
+    'Training Inquiry'
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const toggleService = (option: string) => {
+    setForm(prev => ({
+      ...prev,
+      serviceInterest: prev.serviceInterest.includes(option)
+        ? prev.serviceInterest.filter(s => s !== option)
+        : [...prev.serviceInterest, option]
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,12 +47,14 @@ export default function ContactPage() {
     setStatus('sending');
 
     try {
+      const serviceStr = form.serviceInterest.join(', ') || 'General Inquiry';
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
-          subject: `New Inquiry: ${form.serviceInterest}`,
+          serviceInterest: serviceStr,
+          subject: `New Inquiry: ${serviceStr}`,
         })
       });
 
@@ -50,7 +62,7 @@ export default function ContactPage() {
 
       if (res.ok) {
         setStatus('success');
-        setForm({ name: '', email: '', phone: '', company: '', serviceInterest: 'General Inquiry', message: '' });
+        setForm({ name: '', email: '', phone: '', company: '', serviceInterest: [], message: '' });
       } else {
         setStatus('error');
       }
@@ -91,7 +103,7 @@ export default function ContactPage() {
           {/* Responsive Heading: Text size scales with screen */}
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight leading-[1.1]">
             Start Your <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400">Digital Journey.</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400">Digital Journey</span>
           </h1>
 
           <p className="text-sm sm:text-lg md:text-xl text-slate-400 max-w-2xl mx-auto font-light leading-relaxed px-2">
@@ -176,24 +188,32 @@ export default function ContactPage() {
                   </div>
 
                   <div className="space-y-2 w-full">
-                    <label className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-colors ${focusedField === 'service' ? 'text-blue-400' : 'text-slate-500'}`}>I'm Interested In</label>
-                    <div className="relative w-full">
-                      <select
-                        name="serviceInterest"
-                        value={form.serviceInterest} onChange={handleChange}
-                        onFocus={() => setFocusedField('service')} onBlur={() => setFocusedField(null)}
-                        className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-blue-500 focus:bg-white/[0.05] transition-all appearance-none cursor-pointer truncate pr-8"
-                      >
-                        {serviceOptions.map(opt => <option key={opt} value={opt} className="bg-[#0B0F19] text-white">{opt}</option>)}
-                      </select>
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-                      </div>
+                    <label className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-colors ${focusedField === 'service' ? 'text-blue-400' : 'text-slate-500'}`}>
+                      I'm Interested In <span className="text-slate-600 normal-case font-normal">(select all that apply)</span>
+                    </label>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {serviceOptions.map(opt => {
+                        const selected = form.serviceInterest.includes(opt);
+                        return (
+                          <button
+                            key={opt}
+                            type="button"
+                            onClick={() => toggleService(opt)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all select-none ${
+                              selected
+                                ? 'bg-blue-600 border-blue-500 text-white shadow-sm shadow-blue-900/40'
+                                : 'bg-white/[0.03] border-white/10 text-slate-400 hover:border-blue-500/40 hover:text-slate-200'
+                            }`}
+                          >
+                            {selected && <span className="mr-1">✓</span>}{opt}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
                   <div className="space-y-2 w-full">
-                    <label className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-colors ${focusedField === 'message' ? 'text-blue-400' : 'text-slate-500'}`}>Project Details <span className="text-red-400">*</span></label>
+                    <label className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-colors ${focusedField === 'message' ? 'text-blue-400' : 'text-slate-500'}`}>Description <span className="text-red-400">*</span></label>
                     <textarea
                       name="message" required rows={4}
                       placeholder="Tell us about your project scope..."

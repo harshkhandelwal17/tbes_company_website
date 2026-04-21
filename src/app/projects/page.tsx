@@ -193,7 +193,7 @@ export default function ProjectsPage() {
                 Global Engineering Portfolio
               </div>
               <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight">
-                Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Work.</span>
+                Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Work</span>
               </h1>
               <p className="text-slate-400 mt-2 text-lg font-light max-w-xl">
                 Discover how we bring complex engineering visions to life through precision BIM modeling.

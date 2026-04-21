@@ -83,7 +83,7 @@ const Testimonials = () => {
             Global Success Stories
           </div>
           <h2 className="text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight">
-            Trusted by <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Visionaries.</span>
+            Trusted by <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Visionaries</span>
           </h2>
         </div>
 

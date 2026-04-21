@@ -82,7 +82,7 @@ const LearningPage = () => {
 
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight leading-[1.1]">
             An Art Infused <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500">Learning Experience.</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500">Learning Experience</span>
           </h1>
 
           <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed font-light mb-10">

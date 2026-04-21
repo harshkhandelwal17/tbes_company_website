@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import {
   Search, FileText, Calendar, Mail, Phone,
   Briefcase, Download, Trash2, X, User,
-  ChevronRight, ExternalLink, Filter
+  ChevronRight, ExternalLink, Filter, Image as ImageIcon, Paperclip
 } from 'lucide-react';
 
 interface Application {
@@ -13,6 +13,8 @@ interface Application {
   email: string;
   phone: string;
   resumeUrl: string;
+  coverPhotoUrl?: string;
+  additionalDocuments?: string[];
   coverLetter?: string;
   jobId: {
     _id: string;
@@ -306,6 +308,62 @@ export default function AdminApplicationsPage() {
                   </a>
                 </div>
               </div>
+
+              {/* Cover Photo */}
+              {selectedApp.coverPhotoUrl && (
+                <div>
+                  <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3">Cover Photo</h3>
+                  <a
+                    href={selectedApp.coverPhotoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-4 rounded-xl bg-purple-600/10 border border-purple-500/20 hover:bg-purple-600/20 transition-all group"
+                  >
+                    <div className="p-2 bg-purple-500 rounded-lg text-white"><ImageIcon size={18} /></div>
+                    <div>
+                      <p className="text-sm font-bold text-purple-100">View Cover Photo</p>
+                      <p className="text-xs text-purple-300">Opens in new tab</p>
+                    </div>
+                    <ExternalLink size={16} className="text-purple-400 ml-auto group-hover:text-white transition-colors" />
+                  </a>
+                </div>
+              )}
+
+              {/* Additional Documents */}
+              {selectedApp.additionalDocuments && selectedApp.additionalDocuments.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3">
+                    Supporting Documents ({selectedApp.additionalDocuments.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {selectedApp.additionalDocuments.map((url, idx) => {
+                      const name = url.split('/').pop()?.split('?')[0] || `Document ${idx + 1}`;
+                      return (
+                        <div key={idx} className="flex gap-2">
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 flex items-center gap-3 p-3 rounded-xl bg-zinc-800/60 border border-white/10 hover:bg-zinc-700/60 transition-all group text-sm"
+                          >
+                            <Paperclip size={14} className="text-blue-400 shrink-0" />
+                            <span className="truncate text-zinc-300 group-hover:text-white">{name}</span>
+                            <ExternalLink size={12} className="text-zinc-600 ml-auto shrink-0 group-hover:text-blue-400 transition-colors" />
+                          </a>
+                          <a
+                            href={url}
+                            download
+                            className="p-3 rounded-xl bg-zinc-800 border border-white/10 hover:bg-zinc-700 transition-all flex items-center justify-center text-zinc-400 hover:text-white"
+                            title="Download"
+                          >
+                            <Download size={16} />
+                          </a>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Cover Letter */}
               {selectedApp.coverLetter && (

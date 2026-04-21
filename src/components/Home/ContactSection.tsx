@@ -9,7 +9,7 @@ const ContactSection = () => {
     email: '',
     phone: '',
     company: '',
-    serviceInterest: 'BIM Modeling',
+    serviceInterest: [] as string[],
     subject: '',
     message: ''
   });
@@ -17,8 +17,27 @@ const ContactSection = () => {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
+  const serviceOptions = [
+    'General Inquiry',
+    'BIM 3D Modeling',
+    'MEPF Clash Coordination',
+    'Scan to BIM',
+    '3D Rendering',
+    'CAD Services',
+    'Training Inquiry'
+  ];
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const toggleService = (option: string) => {
+    setForm(prev => ({
+      ...prev,
+      serviceInterest: prev.serviceInterest.includes(option)
+        ? prev.serviceInterest.filter(s => s !== option)
+        : [...prev.serviceInterest, option]
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,10 +46,14 @@ const ContactSection = () => {
     setErrorMessage('');
 
     try {
+      const serviceStr = form.serviceInterest.join(', ') || 'General Inquiry';
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          serviceInterest: serviceStr,
+        }),
       });
 
       const data = await res.json();
@@ -42,7 +65,7 @@ const ContactSection = () => {
           email: '',
           phone: '',
           company: '',
-          serviceInterest: 'BIM Modeling',
+          serviceInterest: [],
           subject: '',
           message: ''
         });
@@ -77,7 +100,7 @@ const ContactSection = () => {
               </div>
               <h2 className="text-4xl lg:text-6xl font-bold text-white leading-tight">
                 Let's Build Your <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Digital Twin.</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Digital Twin</span>
               </h2>
               <p className="text-slate-400 text-lg max-w-lg mx-auto lg:mx-0">
                 Have a complex BIM requirement? Our engineers are ready to discuss your project scope and provide a tailored technical proposal.
@@ -186,33 +209,43 @@ const ContactSection = () => {
                       </div>
                     </div>
 
-                    {/* Service & Subject Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] text-slate-500 uppercase font-black tracking-widest pl-1">Service Needed</label>
-                        <select
-                          name="serviceInterest" value={form.serviceInterest} onChange={handleChange}
-                          className="w-full bg-[#0D121F] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500 transition-all appearance-none cursor-pointer"
-                        >
-                          <option value="BIM Modeling">BIM Modeling</option>
-                          <option value="Scan to BIM">Scan to BIM</option>
-                          <option value="CAD Services">CAD Services</option>
-                          <option value="3D Rendering">3D Rendering</option>
-                          <option value="Other">Other</option>
-                        </select>
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] text-slate-500 uppercase font-black tracking-widest pl-1">Subject *</label>
-                        <input
-                          name="subject" value={form.subject} onChange={handleChange}
-                          type="text" required placeholder="Project Inquiry"
-                          className="w-full bg-white/[0.03] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-slate-600"
-                        />
+                    {/* Service & Subject Row — Service is now full-width chip multi-select */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] text-slate-500 uppercase font-black tracking-widest pl-1">
+                        Service Needed <span className="normal-case font-normal text-slate-600">(select all that apply)</span>
+                      </label>
+                      <div className="flex flex-wrap gap-2 pt-0.5">
+                        {serviceOptions.map(opt => {
+                          const selected = form.serviceInterest.includes(opt);
+                          return (
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={() => toggleService(opt)}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all select-none ${
+                                selected
+                                  ? 'bg-blue-600 border-blue-500 text-white shadow-sm shadow-blue-900/40'
+                                  : 'bg-white/[0.03] border-white/[0.1] text-slate-400 hover:border-blue-500/40 hover:text-slate-200'
+                              }`}
+                            >
+                              {selected && <span className="mr-1">✓</span>}{opt}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[10px] text-slate-500 uppercase font-black tracking-widest pl-1">Project Details *</label>
+                      <label className="text-[10px] text-slate-500 uppercase font-black tracking-widest pl-1">Subject *</label>
+                      <input
+                        name="subject" value={form.subject} onChange={handleChange}
+                        type="text" required placeholder="Project Inquiry"
+                        className="w-full bg-white/[0.03] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-slate-600"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] text-slate-500 uppercase font-black tracking-widest pl-1">Description *</label>
                       <textarea
                         name="message" value={form.message} onChange={handleChange}
                         required rows={3} placeholder="Describe your project scope..."

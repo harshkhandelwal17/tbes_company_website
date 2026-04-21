@@ -46,7 +46,7 @@ const Services = ({ services }: { services: Service[] }) => {
           <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 leading-[1.1] mb-6">
             Engineering the <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500">
-              Future of Infrastructure.
+              Future of Infrastructure
             </span>
           </h2>
           <p className="text-slate-500 text-lg lg:text-xl max-w-2xl leading-relaxed">

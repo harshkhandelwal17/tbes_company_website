@@ -23,6 +23,15 @@ const ApplicationSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        coverPhotoUrl: {
+            type: String,
+            required: false,
+            default: '',
+        },
+        additionalDocuments: {
+            type: [String],
+            default: [],
+        },
         coverLetter: {
             type: String,
             required: false,
