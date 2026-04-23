@@ -35,7 +35,7 @@ export default function JobApplicationForm({ job, isOpen, onClose }: JobApplicat
     experience: '',
     expectedSalary: '',
     noticePeriod: '',
-    coverLetter: '',
+    // coverLetter: '',
     linkedin: '',
     portfolio: '',
     howDidYouHear: ''
@@ -130,7 +130,7 @@ export default function JobApplicationForm({ job, isOpen, onClose }: JobApplicat
       experience: '',
       expectedSalary: '',
       noticePeriod: '',
-      coverLetter: '',
+      // coverLetter: '',
       linkedin: '',
       portfolio: '',
       howDidYouHear: ''
@@ -373,8 +373,8 @@ export default function JobApplicationForm({ job, isOpen, onClose }: JobApplicat
             <div className="bg-gray-50 p-6 rounded-xl">
               <h3 className="text-xl font-semibold text-black mb-4">Cover Letter</h3>
               <textarea
-                name="coverLetter"
-                value={formData.coverLetter}
+                // name="coverLetter"
+                // value={formData.coverLetter}
                 onChange={handleInputChange}
                 rows={6}
                 placeholder="Tell us why you're interested in this position and what makes you a great fit..."

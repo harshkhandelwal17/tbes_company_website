@@ -32,9 +32,10 @@ const ApplicationSchema = new mongoose.Schema(
             type: [String],
             default: [],
         },
-        coverLetter: {
+        coverLetterUrl: {
             type: String,
             required: false,
+            default: '',
         },
         status: {
             type: String,

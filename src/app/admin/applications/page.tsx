@@ -15,7 +15,7 @@ interface Application {
   resumeUrl: string;
   coverPhotoUrl?: string;
   additionalDocuments?: string[];
-  coverLetter?: string;
+  coverLetterUrl?: string;
   jobId: {
     _id: string;
     title: string;
@@ -365,13 +365,18 @@ export default function AdminApplicationsPage() {
                 </div>
               )}
 
-              {/* Cover Letter */}
-              {selectedApp.coverLetter && (
+              {/* Cover Letter File */}
+              {selectedApp.coverLetterUrl && (
                 <div>
                   <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3">Cover Letter</h3>
-                  <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 text-zinc-300 text-sm leading-7 whitespace-pre-wrap">
-                    {selectedApp.coverLetter}
-                  </div>
+                  <a
+                    href={selectedApp.coverLetterUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors shadow"
+                  >
+                    <FileText size={18} /> View/Download Cover Letter
+                  </a>
                 </div>
               )}
 

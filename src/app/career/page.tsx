@@ -148,10 +148,55 @@ const ApplicationModal = ({ job, onClose }: { job: Job; onClose: () => void }) =
     fullName: '',
     email: '',
     phone: '',
-    coverLetter: '',
+    coverLetterUrl: '',
     resumeUrl: '',
     additionalDocuments: [] as string[],
   });
+    // Cover Letter Upload Handler
+    const [isUploadingCover, setIsUploadingCover] = useState(false);
+    const [coverUploadProgress, setCoverUploadProgress] = useState(0);
+    const handleCoverLetterUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (!['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(file.type)) {
+        alert('Only PDF or Word files allowed for cover letter.');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Cover letter size should be less than 5MB');
+        return;
+      }
+      setIsUploadingCover(true);
+      setCoverUploadProgress(0);
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename: file.name, contentType: file.type, folder: 'tbes-coverletters' })
+        });
+        if (!res.ok) throw new Error((await res.json()).error || 'Failed to get upload URL');
+        const { presignedUrl, publicUrl } = await res.json();
+        await new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) setCoverUploadProgress(Math.round((event.loaded / event.total) * 100));
+          };
+          xhr.onload = () => { if (xhr.status >= 200 && xhr.status < 300) resolve(); else reject(new Error('Upload failed')); };
+          xhr.onerror = () => reject(new Error('Network error during upload'));
+          xhr.onabort = () => reject(new Error('Upload aborted'));
+          xhr.open('PUT', presignedUrl);
+          xhr.setRequestHeader('Content-Type', file.type);
+          xhr.send(file);
+        });
+        setFormData(prev => ({ ...prev, coverLetterUrl: publicUrl }));
+        setCoverUploadProgress(100);
+      } catch (error: any) {
+        setCoverUploadProgress(0);
+        alert(error.message || 'Something went wrong during cover letter upload.');
+      } finally {
+        setIsUploadingCover(false);
+      }
+    };
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [isUploading, setIsUploading] = useState(false);
@@ -267,6 +312,10 @@ const ApplicationModal = ({ job, onClose }: { job: Job; onClose: () => void }) =
       alert("Please upload your resume.");
       return;
     }
+    if (!formData.coverLetterUrl) {
+      alert("Please upload your cover letter (PDF or Word).");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -363,7 +412,6 @@ const ApplicationModal = ({ job, onClose }: { job: Job; onClose: () => void }) =
 
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-slate-400">Resume/CV <span className="text-red-400">*</span></label>
-                {/* R2 Migration: Custom file upload instead of CldUploadWidget */}
                 <div className="relative">
                   <input
                     type="file"
@@ -406,6 +454,59 @@ const ApplicationModal = ({ job, onClose }: { job: Job; onClose: () => void }) =
                         <div className="p-3 bg-white/5 rounded-full group-hover:bg-blue-500/20 transition-colors"><UploadCloud size={24} /></div>
                         <div>
                           <p className="font-bold text-sm text-white group-hover:text-blue-300">Click to Upload Resume</p>
+                          <p className="text-xs mt-1 text-slate-500">PDF, DOCX (Max 5MB)</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Cover Letter Upload */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-slate-400">Cover Letter<span className="text-red-400">*</span></label>
+                <div className="relative">
+                  <input
+                    type="file"
+                    id="cover-upload"
+                    className="hidden"
+                    accept=".pdf,.doc,.docx"
+                    onChange={handleCoverLetterUpload}
+                    disabled={isUploadingCover}
+                  />
+                  <div
+                    onClick={() => !isUploadingCover && document.getElementById('cover-upload')?.click()}
+                    className={`group border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${formData.coverLetterUrl
+                      ? 'border-green-500/30 bg-green-500/5'
+                      : isUploadingCover
+                        ? 'border-blue-500/30 bg-blue-500/5 cursor-wait'
+                        : 'border-white/10 hover:border-blue-500/50 hover:bg-blue-500/5'
+                      }`}
+                  >
+                    {isUploadingCover ? (
+                      <div className="flex flex-col items-center gap-3 text-blue-400">
+                        <div className="p-3 bg-blue-500/20 rounded-full animate-pulse"><UploadCloud size={24} /></div>
+                        <div>
+                          <p className="font-bold text-sm text-white">Uploading Cover Letter...</p>
+                          <div className="w-32 bg-white/10 h-1.5 rounded-full mt-2 overflow-hidden">
+                            <div
+                              className="bg-blue-500 h-full transition-all duration-300"
+                              style={{ width: `${coverUploadProgress}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ) : formData.coverLetterUrl ? (
+                      <div className="flex flex-col items-center gap-2 text-green-400">
+                        <div className="p-3 bg-green-500/20 rounded-full"><CheckCircle2 size={24} /></div>
+                        <span className="font-bold text-sm">Cover Letter Attached</span>
+                        <span className="text-xs text-green-400/60">Correctly uploaded to TBES storage</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-3 text-slate-400 group-hover:text-blue-400">
+                        <div className="p-3 bg-white/5 rounded-full group-hover:bg-blue-500/20 transition-colors"><UploadCloud size={24} /></div>
+                        <div>
+                          <p className="font-bold text-sm text-white group-hover:text-blue-300">Click to Upload Cover Letter</p>
                           <p className="text-xs mt-1 text-slate-500">PDF, DOCX (Max 5MB)</p>
                         </div>
                       </div>
@@ -470,13 +571,7 @@ const ApplicationModal = ({ job, onClose }: { job: Job; onClose: () => void }) =
                 )}
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-400">Cover Letter (Optional)</label>
-                <textarea rows={3} placeholder="Tell us why you're a great fit..."
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:bg-white/[0.05] transition-all placeholder:text-slate-600 resize-none"
-                  value={formData.coverLetter} onChange={(e) => setFormData({ ...formData, coverLetter: e.target.value })}
-                />
-              </div>
+
             </div>
 
             <div className="pt-4">
