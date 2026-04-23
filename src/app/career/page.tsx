@@ -464,7 +464,7 @@ const ApplicationModal = ({ job, onClose }: { job: Job; onClose: () => void }) =
 
               {/* Cover Letter Upload */}
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-400">Cover Letter<span className="text-red-400">*</span></label>
+                <label className="text-xs font-medium text-slate-400">Cover Letter <span className="text-red-400">*</span></label>
                 <div className="relative">
                   <input
                     type="file"
