@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 
 export default function CreateJobPage() {
   const [formData, setFormData] = useState({
+    jobCode: "",
     title: "",
     location: "",
     type: "",
@@ -50,6 +51,7 @@ export default function CreateJobPage() {
 
       setSuccess(true);
       setFormData({
+        jobCode: "",
         title: "",
         location: "",
         type: "",
@@ -69,6 +71,10 @@ export default function CreateJobPage() {
       <h1 className="text-2xl font-bold mb-6">Create Job Post</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <Label htmlFor="jobCode">Job ID (Custom)</Label>
+          <Input id="jobCode" name="jobCode" value={formData.jobCode} onChange={handleChange} placeholder="e.g. TBES-2026-001" />
+        </div>
         <div>
           <Label htmlFor="title">Job Title</Label>
           <Input id="title" name="title" value={formData.title} onChange={handleChange} required />

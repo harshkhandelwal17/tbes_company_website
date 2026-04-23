@@ -179,38 +179,30 @@ export default function ProjectsPage() {
 
   return (
     <div className="min-h-screen bg-[#020408] text-white font-sans selection:bg-blue-500/30">
-      
+
       {/* =========================================
           1. HERO SECTION (Clean & Modern)
       ========================================= */}
       <section className="relative pb-12 pt-2 lg:pb-16 bg-[#05080F] border-b border-white/5">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-[0.05]"></div>
-        
+
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="flex flex-col md:flex-row justify-between items-end gap-6">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold uppercase tracking-widest mb-4">
-                Global Engineering Portfolio
-              </div>
-              <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight">
-                Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Work</span>
-              </h1>
-              <p className="text-slate-400 mt-2 text-lg font-light max-w-xl">
-                Discover how we bring complex engineering visions to life through precision BIM modeling.
-              </p>
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold uppercase tracking-widest mb-4 justify-center">
+              Global Engineering Portfolio
             </div>
-            
-            {/* Live Stats */}
-            <div className="flex items-center gap-6">
+            <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight">
+              Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Work</span>
+            </h1>
+            <p className="text-slate-400 mt-2 text-lg font-light max-w-xl mx-auto">
+              Discover how we bring complex engineering visions to life through precision BIM modeling.
+            </p>
+            {/* Live Stats (Right Aligned) */}
+            <div className="flex justify-end mt-6">
               <div className="text-right">
                 <p className="text-3xl font-bold text-white">{stats.total}</p>
                 <p className="text-xs text-slate-500 uppercase tracking-wider">Projects</p>
               </div>
-              {/* <div className="h-10 w-px bg-white/10"></div>
-              <div className="text-right">
-                <p className="text-3xl font-bold text-white">{formatTotalArea(stats.area)}</p>
-                <p className="text-xs text-slate-500 uppercase tracking-wider">{getAreaUnit(stats.area)}</p>
-              </div> */}
             </div>
           </div>
         </div>

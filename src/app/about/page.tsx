@@ -22,21 +22,21 @@ const AboutPage = () => {
       {/* =========================================
           1. SLEEK HERO (Zero Space Waste)
       ========================================= */}
-      <section className="relative pt-28 pb-16  lg:pb-32 bg-[#05080F] overflow-hidden">
+      <section className="relative pt-16 pb-16 lg:pt-20 lg:pb-32 bg-[#05080F] overflow-hidden">
         {/* Engineering Grid Background */}
         <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:3rem_3rem]"></div>
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="max-w-4xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-6">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-6 justify-center">
               Engineering Trust Since 2018
             </div>
             <h1 className="text-4xl md:text-7xl font-bold text-white leading-[1.1] tracking-tight mb-6">
               We Bridge Design & <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Construction Reality.</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Construction Reality</span>
             </h1>
-            <p className="text-base md:text-xl text-slate-400 leading-relaxed max-w-2xl font-light">
+            <p className="text-base md:text-xl text-slate-400 leading-relaxed max-w-2xl mx-auto font-light">
               TBES Global is a premier BIM consultancy transforming the AEC industry through data-rich digital twins and collaborative engineering.
             </p>
           </div>

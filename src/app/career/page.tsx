@@ -44,6 +44,9 @@ const JobDescriptionModal = ({ job, onClose, onApply }: { job: Job; onClose: () 
               <span className="flex items-center gap-1"><Clock size={10} className="text-purple-400" /> {job.type}</span>
               {job.experience && <span className="flex items-center gap-1"><Award size={10} className="text-orange-400" /> {formatExperience(job.experience)}</span>}
             </div>
+            <div className="mt-2 text-xs text-slate-500 font-mono">
+              <span className="font-semibold text-slate-400">Job ID:</span> {job.jobCode ? job.jobCode : job._id}
+            </div>
           </div>
           <button onClick={onClose} className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-colors">
             <X size={20} />
@@ -123,6 +126,7 @@ const JobDescriptionModal = ({ job, onClose, onApply }: { job: Job; onClose: () 
 
 interface Job {
   _id: string;
+  jobCode?: string;
   title: string;
   department?: string;
   location: string;
@@ -146,15 +150,13 @@ const ApplicationModal = ({ job, onClose }: { job: Job; onClose: () => void }) =
     phone: '',
     coverLetter: '',
     resumeUrl: '',
-    coverPhotoUrl: '',
     additionalDocuments: [] as string[],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-  const [photoProgress, setPhotoProgress] = useState(0);
+  // Removed cover photo upload state
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
   const [docProgress, setDocProgress] = useState(0);
 
@@ -221,31 +223,7 @@ const ApplicationModal = ({ job, onClose }: { job: Job; onClose: () => void }) =
     }
   };
 
-  // Cover photo upload handler
-  const handleCoverPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { alert('Photo size should be less than 5MB'); return; }
-    setIsUploadingPhoto(true); setPhotoProgress(0);
-    try {
-      const res = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename: file.name, contentType: file.type, folder: 'tbes-cover-photos' }) });
-      if (!res.ok) throw new Error((await res.json()).error || 'Upload failed');
-      const { presignedUrl, publicUrl } = await res.json();
-      await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.upload.onprogress = (ev) => { if (ev.lengthComputable) setPhotoProgress(Math.round((ev.loaded / ev.total) * 100)); };
-        xhr.onload = () => xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error('Upload failed'));
-        xhr.onerror = () => reject(new Error('Network error'));
-        xhr.open('PUT', presignedUrl);
-        xhr.setRequestHeader('Content-Type', file.type);
-        xhr.send(file);
-      });
-      setFormData(prev => ({ ...prev, coverPhotoUrl: publicUrl }));
-      setPhotoProgress(100);
-    } catch (err: any) { alert(err.message || 'Photo upload failed'); }
-    finally { setIsUploadingPhoto(false); }
-  };
+  // Cover photo upload removed
 
   // Additional documents upload handler
   const handleDocUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -384,7 +362,7 @@ const ApplicationModal = ({ job, onClose }: { job: Job; onClose: () => void }) =
               <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-white/5 pb-2">Documents</h3>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-400">Resume/CV (PDF) <span className="text-red-400">*</span></label>
+                <label className="text-xs font-medium text-slate-400">Resume/CV <span className="text-red-400">*</span></label>
                 {/* R2 Migration: Custom file upload instead of CldUploadWidget */}
                 <div className="relative">
                   <input
@@ -436,45 +414,7 @@ const ApplicationModal = ({ job, onClose }: { job: Job; onClose: () => void }) =
                 </div>
               </div>
 
-              {/* Cover Photo Upload */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-400">Cover Photo (Optional)
-                  <span className="ml-2 text-slate-600">.jpg, .png (Max 5MB)</span>
-                </label>
-                <input type="file" id="cover-photo-upload" className="hidden" accept="image/*" onChange={handleCoverPhotoUpload} disabled={isUploadingPhoto} />
-                <div
-                  onClick={() => !isUploadingPhoto && document.getElementById('cover-photo-upload')?.click()}
-                  className={`group border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all ${
-                    formData.coverPhotoUrl ? 'border-green-500/30 bg-green-500/5'
-                    : isUploadingPhoto ? 'border-blue-500/30 bg-blue-500/5 cursor-wait'
-                    : 'border-white/10 hover:border-purple-500/50 hover:bg-purple-500/5'
-                  }`}
-                >
-                  {isUploadingPhoto ? (
-                    <div className="flex flex-col items-center gap-2 text-blue-400">
-                      <div className="p-2 bg-blue-500/20 rounded-full animate-pulse"><ImageIcon size={20} /></div>
-                      <p className="font-bold text-sm text-white">Uploading Photo...</p>
-                      <div className="w-28 bg-white/10 h-1.5 rounded-full overflow-hidden">
-                        <div className="bg-blue-500 h-full transition-all" style={{ width: `${photoProgress}%` }} />
-                      </div>
-                    </div>
-                  ) : formData.coverPhotoUrl ? (
-                    <div className="flex items-center justify-center gap-3 text-green-400">
-                      <div className="p-2 bg-green-500/20 rounded-full"><CheckCircle2 size={20} /></div>
-                      <div className="text-left">
-                        <p className="font-bold text-sm">Photo Uploaded</p>
-                        <button type="button" onClick={e => { e.stopPropagation(); setFormData(p => ({ ...p, coverPhotoUrl: '' })); }} className="text-xs text-red-400 hover:underline">Remove</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-2 text-slate-400 group-hover:text-purple-400">
-                      <div className="p-2 bg-white/5 rounded-full group-hover:bg-purple-500/20 transition-colors"><ImageIcon size={20} /></div>
-                      <p className="text-sm font-bold text-white group-hover:text-purple-300">Click to Upload Cover Photo</p>
-                      <p className="text-xs text-slate-500">JPG, PNG (Max 5MB)</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+
 
               {/* Additional Supporting Documents */}
               <div className="space-y-1.5">
@@ -588,7 +528,7 @@ const CareerPage = () => {
       {/* =========================================
           1. HERO SECTION
       ========================================= */}
-      <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-32 overflow-hidden border-b border-white/5">
+      <section className="relative pt-16 pb-20 lg:pt-20 lg:pb-32 overflow-hidden border-b border-white/5">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-[0.05]"></div>
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2"></div>
 

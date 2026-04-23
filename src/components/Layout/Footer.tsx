@@ -61,8 +61,8 @@ const Footer = () => {
                   className="rounded-lg"
                 />
               </div>
-              <span className="text-2xl font-black tracking-tight uppercase">
-                TBES GLOBAL</span>
+              <span className="text-2xl font-black tracking-tight ">
+                TBES Global</span>
             </Link>
 
             <p className="text-slate-400 text-sm leading-relaxed max-w-sm font-light">

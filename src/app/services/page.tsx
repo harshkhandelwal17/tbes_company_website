@@ -52,13 +52,14 @@ function getColor(color: string) {
 export default async function ServicesPage() {
   const services = await getServices() as ServiceDocument[];
 
+
   return (
     <div className="min-h-screen bg-white font-sans">
 
       {/* =========================================
           1. HERO SECTION
       ========================================= */}
-      <section className="relative pt-4 pb-20 lg:pt-4 lg:pb-32 bg-[#05080F] overflow-hidden">
+      <section className="relative pt-28 pb-16 lg:pb-32 bg-[#05080F] overflow-hidden">
         {/* Background Effects */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-[0.1]"></div>
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2"></div>
@@ -67,10 +68,10 @@ export default async function ServicesPage() {
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-widest mb-8">
             End-to-End Engineering Solutions
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-8 tracking-tight leading-tight">
+          <h1 className="text-4xl md:text-7xl font-bold text-white leading-[1.1] tracking-tight mb-6">
             Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Services</span>
           </h1>
-          <p className="text-lg md:text-2xl text-slate-400 max-w-3xl mx-auto leading-relaxed font-light">
+          <p className="text-base md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed font-light">
             Comprehensive BIM, CAD, and Digital Twin solutions tailored for the modern Architecture, Engineering, and Construction industry.
           </p>
         </div>

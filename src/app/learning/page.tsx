@@ -45,44 +45,44 @@ const LearningPage = () => {
 
   const courses = [
     {
-      name: "AutoCAD Mastery",
+      name: "AutoCAD",
       icon: <FileText size={32} className="text-blue-400" />,
       description: "Master 2D drafting and 3D design foundations. The starting point for every engineering career.",
       tags: ["2D/3D", "Drafting", "Industry Standard"]
     },
     {
-      name: "Revit Architecture",
+      name: "Revit",
       icon: <Layers size={32} className="text-sky-400" />,
       description: "Dive into Building Information Modeling. Create intelligent 3D models for planning and construction.",
-      tags: ["BIM", "3D Modeling", "Architecture"]
+      tags: ["BIM", "3D Modeling", "Architecture","MEPF"]
     },
     {
-      name: "Navisworks Manage",
+      name: "Navisworks",
       icon: <Target size={32} className="text-green-400" />,
       description: "The ultimate project review tool. Master clash detection, coordination, and 4D simulation.",
-      tags: ["Clash Detection", "Coordination", "4D"]
+      tags: ["Clash Detection", "Coordination"]
     }
   ];
 
   return (
-    <div className="min-h-screen bg-[#05080F] text-white font-sans selection:bg-orange-500/30">
+    <div className="min-h-screen bg-[#05080F] text-white font-sans selection:bg-blue-500/30">
 
       {/* =========================================
           1. HERO SECTION
       ========================================= */}
-      <section className="relative pb-20 pt-24 lg:pt-32 lg:pb-32 overflow-hidden border-b border-white/5">
+      <section className="relative pb-20 pt-14 lg:pt-20 lg:pb-32 overflow-hidden border-b border-white/5">
         {/* Abstract Background */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-[0.05]"></div>
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-orange-600/10 blur-[120px] rounded-full pointer-events-none"></div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none"></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-bold uppercase tracking-widest mb-8 animate-in fade-in zoom-in duration-500">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-widest mb-8 animate-in fade-in zoom-in duration-500 justify-center">
             <Sparkles size={12} /> Transform Your Career
           </div>
 
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight leading-[1.1]">
             An Art Infused <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500">Learning Experience</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Learning Experience</span>
           </h1>
 
           <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed font-light mb-10">
@@ -91,7 +91,7 @@ const LearningPage = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact" className="px-8 py-4 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-xl transition-all shadow-[0_0_30px_rgba(234,88,12,0.3)] flex items-center justify-center gap-2 active:scale-95">
+            <Link href="/contact" className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-[0_0_30px_rgba(59,130,246,0.3)] flex items-center justify-center gap-2 active:scale-95">
               Enquire Now <ArrowRight size={18} />
             </Link>
             <Link href="#courses" className="px-8 py-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95">

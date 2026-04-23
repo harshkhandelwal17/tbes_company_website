@@ -91,7 +91,7 @@ export default function ContactPage() {
         <div className="absolute bottom-0 left-0 w-[70vw] md:w-[500px] h-[70vw] md:h-[500px] bg-purple-600/10 blur-[60px] md:blur-[120px] rounded-full -translate-x-1/3 translate-y-1/3"></div>
       </div>
 
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-24 pb-12 lg:pt-32 lg:pb-20">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-14 pb-12 lg:pt-20 lg:pb-20">
 
         {/* =========================================
             2. HEADER SECTION
